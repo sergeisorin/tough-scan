@@ -11,6 +11,7 @@
 		27395B660D657BA9E7D13A35 /* DocumentSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C77B0B2E436293F82CC24B5 /* DocumentSnapshot.swift */; };
 		28365114806EB29739E45EFB /* ScannedPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7749FCCACE9535C80BBA6BB7 /* ScannedPage.swift */; };
 		4DB430FE93822A676B8B08CC /* ScanFrameProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99AC13185ACE56799B528D7F /* ScanFrameProcessor.swift */; };
+		5DD361B545CF6A7BA6499E92 /* CameraControlState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48EB9803BA739625DB24357D /* CameraControlState.swift */; };
 		5E4EF76E9FE10CC31E4C0554 /* ConfidenceGridOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C145B6DE6173286F9BF2F107 /* ConfidenceGridOverlay.swift */; };
 		612A0AE6390D8C680EF95BA8 /* CameraSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 327D40757AA306AA44B59C7D /* CameraSessionController.swift */; };
 		6281A1A6349D8012E5487CC7 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0784D7BCE7E9B827A482442 /* RootView.swift */; };
@@ -19,8 +20,10 @@
 		9093CC2976516591AC0BBA89 /* TextRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA96750E73F93C6D18B4136 /* TextRecognitionService.swift */; };
 		92EFE5D6437977CA41568DC6 /* ToughScanCore in Frameworks */ = {isa = PBXBuildFile; productRef = 14FD30A2EF9A3CDA810FF52F /* ToughScanCore */; };
 		9881609C2A09EC657C826B9A /* ShareSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8580ECFBCC79BDA06ECB5AF2 /* ShareSheetView.swift */; };
+		9B9F8B04FB89E9CA12BFF8FF /* CameraControlState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48EB9803BA739625DB24357D /* CameraControlState.swift */; };
 		9EAA8F52A9629D26C029A824 /* LiveScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887E7FD673C7E68C35AF5A0F /* LiveScanView.swift */; };
 		A937D6F22D1A4E647CBEE137 /* NormalizedDocumentPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF35FED8AAB8B6B2DC4BBABC /* NormalizedDocumentPreviewView.swift */; };
+		BD390354DE2ABAC55EDB0FFD /* CameraControlStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A745083537F8F066FBD3F6F6 /* CameraControlStateTests.swift */; };
 		BE20CE101D9DF0DCD8B31A17 /* ImageEnhancer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C135D020D617896476EBE1D /* ImageEnhancer.swift */; };
 		C006D5BE919E1E2747B19F5F /* ScanExportBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A511DED11126783F6C195158 /* ScanExportBundle.swift */; };
 		C0D0230273F1FB0B32FCB98C /* ScanExportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38D150155C8B36832194E9BD /* ScanExportServiceTests.swift */; };
@@ -44,6 +47,7 @@
 		225CE543C171F82E6E5634C3 /* ToughScanApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToughScanApp.swift; sourceTree = "<group>"; };
 		327D40757AA306AA44B59C7D /* CameraSessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSessionController.swift; sourceTree = "<group>"; };
 		38D150155C8B36832194E9BD /* ScanExportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanExportServiceTests.swift; sourceTree = "<group>"; };
+		48EB9803BA739625DB24357D /* CameraControlState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraControlState.swift; sourceTree = "<group>"; };
 		55F5A4AAE84221C72AACF760 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5D9DF4ACE753A71C687C07F8 /* tough-scan */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "tough-scan"; path = .; sourceTree = SOURCE_ROOT; };
 		6DD210C6F1E08EAA4555FCFE /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
@@ -53,6 +57,7 @@
 		8C135D020D617896476EBE1D /* ImageEnhancer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEnhancer.swift; sourceTree = "<group>"; };
 		99AC13185ACE56799B528D7F /* ScanFrameProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanFrameProcessor.swift; sourceTree = "<group>"; };
 		A511DED11126783F6C195158 /* ScanExportBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanExportBundle.swift; sourceTree = "<group>"; };
+		A745083537F8F066FBD3F6F6 /* CameraControlStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraControlStateTests.swift; sourceTree = "<group>"; };
 		AAC81862EDA5A2DC5BDDB1BE /* ScanReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanReviewView.swift; sourceTree = "<group>"; };
 		AC192AD5CF739A8CABE7A6E2 /* ToughScanTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ToughScanTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF35FED8AAB8B6B2DC4BBABC /* NormalizedDocumentPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NormalizedDocumentPreviewView.swift; sourceTree = "<group>"; };
@@ -109,6 +114,7 @@
 		3A931500F5BC24E7D95E6D90 /* Camera */ = {
 			isa = PBXGroup;
 			children = (
+				48EB9803BA739625DB24357D /* CameraControlState.swift */,
 				6DD210C6F1E08EAA4555FCFE /* CameraPreviewView.swift */,
 				327D40757AA306AA44B59C7D /* CameraSessionController.swift */,
 			);
@@ -149,6 +155,7 @@
 		70D5FB1DA7AADD515C2B2B3D /* ToughScanTests */ = {
 			isa = PBXGroup;
 			children = (
+				7A32F3D125A28EA6DDA9A477 /* Camera */,
 				C493054EA36F5E18A1FD18A9 /* Export */,
 			);
 			path = ToughScanTests;
@@ -169,6 +176,14 @@
 				887E7FD673C7E68C35AF5A0F /* LiveScanView.swift */,
 			);
 			path = Scan;
+			sourceTree = "<group>";
+		};
+		7A32F3D125A28EA6DDA9A477 /* Camera */ = {
+			isa = PBXGroup;
+			children = (
+				A745083537F8F066FBD3F6F6 /* CameraControlStateTests.swift */,
+			);
+			path = Camera;
 			sourceTree = "<group>";
 		};
 		86C7E93528C74E2C8E110FBC /* Products */ = {
@@ -296,6 +311,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B9F8B04FB89E9CA12BFF8FF /* CameraControlState.swift in Sources */,
 				C37EDDE0EA97A55BDB8FBE92 /* CameraPreviewView.swift in Sources */,
 				612A0AE6390D8C680EF95BA8 /* CameraSessionController.swift in Sources */,
 				5E4EF76E9FE10CC31E4C0554 /* ConfidenceGridOverlay.swift in Sources */,
@@ -322,6 +338,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5DD361B545CF6A7BA6499E92 /* CameraControlState.swift in Sources */,
+				BD390354DE2ABAC55EDB0FFD /* CameraControlStateTests.swift in Sources */,
 				DD2A7676776C7DC9712AFD0D /* DocumentSnapshot.swift in Sources */,
 				C006D5BE919E1E2747B19F5F /* ScanExportBundle.swift in Sources */,
 				6F0AB09F2DB13F3E50B4427A /* ScanExportService.swift in Sources */,
