@@ -40,5 +40,9 @@ Use a real iPhone for camera validation; the simulator cannot prove the live sca
 5. Repeat with a skewed English page and confirm perspective normalization still allows OCR.
 6. Repeat with printed Hebrew text.
 7. Try lower light or faded text and confirm weak regions remain marked for rescan.
-8. Confirm no raw OCR text appears in debug logs.
+8. In review, tap Add another page and confirm the app returns to live scan with a fresh confidence grid.
+9. Scan a second page, then export the local result.
+10. Confirm the share sheet offers one PDF and one text file.
+11. Confirm the PDF contains both pages and the text file separates OCR text by page.
+12. Confirm no raw OCR text appears in debug logs.
 

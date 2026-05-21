@@ -5,6 +5,7 @@ struct RootView: View {
     @State private var route: Route = .start
     @State private var session = ProgressiveScanSession(gridWidth: 4, gridHeight: 6)
     @State private var bestSnapshot: DocumentSnapshot?
+    @State private var capturedPages: [ScannedPage] = []
 
     var body: some View {
         NavigationStack {
@@ -23,12 +24,30 @@ struct RootView: View {
             case .review:
                 ScanReviewView(
                     session: session,
-                    snapshot: bestSnapshot
+                    snapshot: bestSnapshot,
+                    capturedPages: capturedPages,
+                    onAddPage: addCurrentPageAndContinue
                 ) {
                     route = .scan
                 }
             }
         }
+    }
+
+    private func addCurrentPageAndContinue() {
+        guard let bestSnapshot else {
+            return
+        }
+
+        capturedPages.append(
+            ScannedPage(
+                snapshot: bestSnapshot,
+                recognizedTextBlocks: session.recognizedTextBlocks
+            )
+        )
+        session = ProgressiveScanSession(gridWidth: 4, gridHeight: 6)
+        self.bestSnapshot = nil
+        route = .scan
     }
 }
 
