@@ -7,10 +7,12 @@ import UIKit
 final class ScanFrameProcessor: CameraFrameConsumer {
     typealias ObservationHandler = @MainActor (FrameObservation) -> Void
     typealias SnapshotHandler = @MainActor (DocumentSnapshot) -> Void
+    typealias FrameQualityHandler = @MainActor (FrameQualityMetrics) -> Void
     typealias ErrorHandler = @MainActor (String) -> Void
 
     private let mapper: TileEvidenceMapper
     private let imageEnhancer: ImageEnhancer
+    private let frameQualityAnalyzer: FrameQualityAnalyzing
     private let textRecognizer: TextRecognitionService
     private let documentDetector: DocumentDetecting
     private let perspectiveNormalizer: PerspectiveNormalizing
@@ -19,6 +21,7 @@ final class ScanFrameProcessor: CameraFrameConsumer {
     private let stateLock = NSLock()
     private let onObservation: ObservationHandler
     private let onSnapshot: SnapshotHandler?
+    private let onFrameQuality: FrameQualityHandler?
     private let onError: ErrorHandler?
 
     private var isProcessing = false
@@ -30,16 +33,19 @@ final class ScanFrameProcessor: CameraFrameConsumer {
         gridHeight: Int,
         framesPerSecond: Double = 3,
         imageEnhancer: ImageEnhancer = ImageEnhancer(),
+        frameQualityAnalyzer: FrameQualityAnalyzing = FrameQualityAnalyzer(),
         textRecognizer: TextRecognitionService = TextRecognitionService(),
         documentDetector: DocumentDetecting = DocumentDetectionService(),
         perspectiveNormalizer: PerspectiveNormalizing = PerspectiveNormalizer(),
         geometryStabilizer: DocumentGeometryStabilizer = DocumentGeometryStabilizer(),
         onObservation: @escaping ObservationHandler,
         onSnapshot: SnapshotHandler? = nil,
+        onFrameQuality: FrameQualityHandler? = nil,
         onError: ErrorHandler? = nil
     ) {
         self.mapper = TileEvidenceMapper(gridWidth: gridWidth, gridHeight: gridHeight)
         self.imageEnhancer = imageEnhancer
+        self.frameQualityAnalyzer = frameQualityAnalyzer
         self.textRecognizer = textRecognizer
         self.documentDetector = documentDetector
         self.perspectiveNormalizer = perspectiveNormalizer
@@ -47,6 +53,7 @@ final class ScanFrameProcessor: CameraFrameConsumer {
         self.minimumFrameInterval = 1 / max(framesPerSecond, 1)
         self.onObservation = onObservation
         self.onSnapshot = onSnapshot
+        self.onFrameQuality = onFrameQuality
         self.onError = onError
     }
 
@@ -93,17 +100,21 @@ final class ScanFrameProcessor: CameraFrameConsumer {
                         return
                     }
 
-                    let enhancedImage = self.imageEnhancer.enhance(normalizedImage)
+                    let qualityMetrics = self.frameQualityAnalyzer.analyze(
+                        normalizedImage,
+                        geometryConfidence: stableGeometry.confidence,
+                        documentCoverage: stableGeometry.quad.area
+                    )
+                    await self.onFrameQuality?(qualityMetrics)
+
+                    let enhancedImage = self.imageEnhancer.enhance(normalizedImage, metrics: qualityMetrics)
 
                     guard let cgImage = self.imageEnhancer.makeCGImage(from: enhancedImage) else {
                         await self.onError?("Could not prepare document image for OCR.")
                         return
                     }
 
-                    let visualQuality = self.estimateVisualQuality(
-                        from: enhancedImage,
-                        geometryConfidence: stableGeometry.confidence
-                    )
+                    let visualQuality = qualityMetrics.captureScore
                     let regions = try await self.textRecognizer.recognizeTextRegions(in: cgImage)
                     let mapped = self.mapper.map(regions: regions, visualQuality: visualQuality)
 
@@ -113,7 +124,14 @@ final class ScanFrameProcessor: CameraFrameConsumer {
 
                     let snapshot = DocumentSnapshot(
                         image: UIImage(cgImage: cgImage),
-                        visualQuality: visualQuality
+                        visualQuality: visualQuality,
+                        captureScore: self.captureScore(
+                            qualityMetrics: qualityMetrics,
+                            regions: regions,
+                            tileEvidence: mapped.tileEvidence
+                        ),
+                        averageOCRConfidence: self.averageOCRConfidence(in: regions),
+                        textCoverage: self.averageTextCoverage(in: mapped.tileEvidence)
                     )
                     let observation = FrameObservation(
                         id: UUID().uuidString,
@@ -161,14 +179,33 @@ final class ScanFrameProcessor: CameraFrameConsumer {
         return geometryStabilizer.update(with: observation)
     }
 
-    private func estimateVisualQuality(
-        from image: CIImage,
-        geometryConfidence: Double
+    private func captureScore(
+        qualityMetrics: FrameQualityMetrics,
+        regions: [NormalizedTextRegion],
+        tileEvidence: [TileEvidence]
     ) -> Double {
-        let area = max(image.extent.width * image.extent.height, 1)
-        let megapixels = area / 1_000_000
-        let imageQuality = min(0.85, max(0.55, megapixels / 3))
-        return min(max((imageQuality * 0.70) + (geometryConfidence * 0.30), 0), 1)
+        let ocrConfidence = averageOCRConfidence(in: regions)
+        let textCoverage = averageTextCoverage(in: tileEvidence)
+
+        return ((qualityMetrics.captureScore * 0.55) + (ocrConfidence * 0.30) + (textCoverage * 0.15))
+            .clampedToUnitRange
     }
+
+    private func averageOCRConfidence(in regions: [NormalizedTextRegion]) -> Double {
+        guard !regions.isEmpty else {
+            return 0
+        }
+
+        return (regions.reduce(0) { $0 + $1.confidence } / Double(regions.count)).clampedToUnitRange
+    }
+
+    private func averageTextCoverage(in tileEvidence: [TileEvidence]) -> Double {
+        guard !tileEvidence.isEmpty else {
+            return 0
+        }
+
+        return (tileEvidence.reduce(0) { $0 + $1.textCoverage } / Double(tileEvidence.count)).clampedToUnitRange
+    }
+
 }
 
