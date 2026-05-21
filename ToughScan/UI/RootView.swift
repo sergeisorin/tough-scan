@@ -35,7 +35,7 @@ struct RootView: View {
         }
     }
 
-    private func addCurrentPageAndContinue() {
+    private func addCurrentPageAndContinue(structuredDocument: StructuredDocument?) {
         guard let bestSnapshot else {
             return
         }
@@ -43,7 +43,8 @@ struct RootView: View {
         capturedPages.append(
             ScannedPage(
                 snapshot: bestSnapshot,
-                recognizedTextBlocks: session.recognizedTextBlocks
+                recognizedTextBlocks: session.recognizedTextBlocks,
+                structuredDocument: structuredDocument
             )
         )
         session = ProgressiveScanSession(gridWidth: 4, gridHeight: 6)

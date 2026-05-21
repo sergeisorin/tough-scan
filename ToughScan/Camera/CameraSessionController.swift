@@ -15,6 +15,8 @@ final class CameraSessionController: NSObject, ObservableObject {
     @Published private(set) var latestError: String?
     @Published private(set) var cameraControlsAvailable = false
     @Published private(set) var supportedExposureRange: ClosedRange<Float> = -2...2
+    @Published private(set) var supportedZoomRange: ClosedRange<CGFloat> = 1...1
+    @Published private(set) var currentZoomFactor: CGFloat = 1
 
     let captureSession = AVCaptureSession()
 
@@ -62,7 +64,8 @@ final class CameraSessionController: NSObject, ObservableObject {
             self.captureSession.addInput(input)
             self.publishCameraControlSupport(
                 isAvailable: true,
-                exposureRange: device.minExposureTargetBias...device.maxExposureTargetBias
+                exposureRange: device.minExposureTargetBias...device.maxExposureTargetBias,
+                zoomRange: self.supportedAutonomousZoomRange(for: device)
             )
 
             self.videoOutput.alwaysDiscardsLateVideoFrames = true
@@ -236,6 +239,49 @@ final class CameraSessionController: NSObject, ObservableObject {
         }
     }
 
+    func setZoomFactor(_ zoomFactor: CGFloat, completion: CameraControlCompletion? = nil) {
+        sessionQueue.async { [weak self] in
+            guard let self, let device = self.currentVideoDevice() else {
+                self?.publishCameraControlResult(
+                    success: false,
+                    message: "Camera zoom is available on iPhone.",
+                    completion: completion
+                )
+                return
+            }
+
+            do {
+                try device.lockForConfiguration()
+                defer {
+                    device.unlockForConfiguration()
+                }
+
+                let range = self.supportedAutonomousZoomRange(for: device)
+                let clampedZoom = min(max(zoomFactor, range.lowerBound), range.upperBound)
+
+                if device.isRampingVideoZoom {
+                    device.cancelVideoZoomRamp()
+                }
+
+                device.ramp(toVideoZoomFactor: clampedZoom, withRate: 4)
+                DispatchQueue.main.async {
+                    self.currentZoomFactor = clampedZoom
+                }
+                self.publishCameraControlResult(
+                    success: true,
+                    message: clampedZoom > 1 ? "Zooming in for small text." : "Zoom reset.",
+                    completion: completion
+                )
+            } catch {
+                self.publishCameraControlResult(
+                    success: false,
+                    message: "Zoom could not be changed.",
+                    completion: completion
+                )
+            }
+        }
+    }
+
     func resetCameraControls(completion: CameraControlCompletion? = nil) {
         sessionQueue.async { [weak self] in
             guard let self, let device = self.currentVideoDevice() else {
@@ -266,6 +312,14 @@ final class CameraSessionController: NSObject, ObservableObject {
                     device.setExposureTargetBias(0, completionHandler: nil)
                 }
 
+                if device.isRampingVideoZoom {
+                    device.cancelVideoZoomRamp()
+                }
+                device.videoZoomFactor = self.supportedAutonomousZoomRange(for: device).lowerBound
+                DispatchQueue.main.async {
+                    self.currentZoomFactor = 1
+                }
+
                 self.publishCameraControlResult(
                     success: true,
                     message: "Camera controls reset to auto.",
@@ -285,13 +339,23 @@ final class CameraSessionController: NSObject, ObservableObject {
         (captureSession.inputs.first as? AVCaptureDeviceInput)?.device
     }
 
+    private func supportedAutonomousZoomRange(for device: AVCaptureDevice) -> ClosedRange<CGFloat> {
+        let lowerBound = max(device.minAvailableVideoZoomFactor, 1)
+        let hardwareUpperBound = max(lowerBound, device.maxAvailableVideoZoomFactor)
+        let upperBound = min(hardwareUpperBound, 2)
+
+        return lowerBound...upperBound
+    }
+
     private func publishCameraControlSupport(
         isAvailable: Bool,
-        exposureRange: ClosedRange<Float> = -2...2
+        exposureRange: ClosedRange<Float> = -2...2,
+        zoomRange: ClosedRange<CGFloat> = 1...1
     ) {
         DispatchQueue.main.async {
             self.cameraControlsAvailable = isAvailable
             self.supportedExposureRange = exposureRange
+            self.supportedZoomRange = zoomRange
         }
     }
 

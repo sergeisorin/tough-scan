@@ -9,6 +9,29 @@ protocol DocumentDetecting {
 
 final class DocumentDetectionService: DocumentDetecting {
     func detectDocument(in image: CIImage) async throws -> DocumentGeometryObservation? {
+        #if compiler(>=6.2)
+        if #available(iOS 26.0, *) {
+            let request = DetectDocumentSegmentationRequest(.revision1)
+            guard let observation = try await request.perform(on: image) else {
+                return nil
+            }
+
+            let geometry = DocumentDetectionGeometryMapper.geometryObservation(
+                topLeft: observation.topLeft.cgPoint,
+                topRight: observation.topRight.cgPoint,
+                bottomRight: observation.bottomRight.cgPoint,
+                bottomLeft: observation.bottomLeft.cgPoint,
+                confidence: observation.confidence
+            )
+
+            guard geometry.quad.isValidDocumentShape else {
+                return nil
+            }
+
+            return geometry
+        }
+        #endif
+
         guard let cgImage = CIContext().createCGImage(image, from: image.extent) else {
             return nil
         }
@@ -22,7 +45,15 @@ final class DocumentDetectionService: DocumentDetecting {
 
                 let rectangles = (request.results as? [VNRectangleObservation]) ?? []
                 let bestRectangle = rectangles
-                    .map(Self.geometryObservation)
+                    .map { rectangle in
+                        DocumentDetectionGeometryMapper.geometryObservation(
+                            topLeft: rectangle.topLeft,
+                            topRight: rectangle.topRight,
+                            bottomRight: rectangle.bottomRight,
+                            bottomLeft: rectangle.bottomLeft,
+                            confidence: rectangle.confidence
+                        )
+                    }
                     .filter { $0.quad.isValidDocumentShape }
                     .max { lhs, rhs in
                         let lhsScore = lhs.confidence * lhs.quad.area
@@ -47,24 +78,6 @@ final class DocumentDetectionService: DocumentDetecting {
                 continuation.resume(throwing: error)
             }
         }
-    }
-
-    private static func geometryObservation(from rectangle: VNRectangleObservation) -> DocumentGeometryObservation {
-        DocumentGeometryObservation(
-            quad: DocumentQuad(
-                topLeft: rectangle.topLeft.asTopLeftPoint,
-                topRight: rectangle.topRight.asTopLeftPoint,
-                bottomRight: rectangle.bottomRight.asTopLeftPoint,
-                bottomLeft: rectangle.bottomLeft.asTopLeftPoint
-            ),
-            confidence: Double(rectangle.confidence)
-        )
-    }
-}
-
-private extension CGPoint {
-    var asTopLeftPoint: ToughScanCore.NormalizedPoint {
-        ToughScanCore.NormalizedPoint(x: x, y: 1 - y)
     }
 }
 

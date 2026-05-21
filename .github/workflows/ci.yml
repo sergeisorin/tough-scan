@@ -34,3 +34,10 @@ jobs:
 
       - name: Build iOS app
         run: xcodebuild -project ToughScan.xcodeproj -scheme ToughScan -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+
+      - name: Run iOS unit tests
+        run: |
+          DEVICE_TYPE=$(xcrun simctl list devicetypes --json | python3 -c 'import json, sys; types = json.load(sys.stdin)["devicetypes"]; preferred = ["iPhone 16 Pro", "iPhone 16", "iPhone 15 Pro", "iPhone 15"]; matches = [device_type["identifier"] for name in preferred for device_type in types if device_type["name"] == name] or [device_type["identifier"] for device_type in types if device_type["name"].startswith("iPhone")]; print(matches[0] if matches else sys.exit("No iPhone simulator device type found"))')
+          RUNTIME=$(xcrun simctl list runtimes --json | python3 -c 'import json, sys; runtimes = [runtime for runtime in json.load(sys.stdin)["runtimes"] if runtime.get("isAvailable") and runtime.get("platform") == "iOS"]; runtimes.sort(key=lambda runtime: runtime.get("version", "")); print(runtimes[-1]["identifier"] if runtimes else sys.exit("No available iOS simulator runtime found"))')
+          DEVICE_ID=$(xcrun simctl create "ToughScan CI iPhone" "$DEVICE_TYPE" "$RUNTIME")
+          xcodebuild test -project ToughScan.xcodeproj -scheme ToughScan -destination "platform=iOS Simulator,id=$DEVICE_ID" CODE_SIGNING_ALLOWED=NO

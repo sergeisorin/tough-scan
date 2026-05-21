@@ -13,6 +13,10 @@ struct LiveScanView: View {
     @State private var liveScanMessage: String?
     @State private var latestSnapshot: DocumentSnapshot?
     @State private var cameraControlState = CameraControlState()
+    @State private var automationController = ScanAutomationController()
+    @State private var latestFrameQuality: FrameQualityMetrics?
+    @State private var messageCoordinator = ScanMessageCoordinator()
+    @State private var automationFocusRequest: CameraFocusRequest?
 
     var body: some View {
         VStack(spacing: 18) {
@@ -20,7 +24,8 @@ struct LiveScanView: View {
                 if hasCameraAccess {
                     CameraPreviewView(
                         session: cameraController.captureSession,
-                        onTapDevicePoint: focusCamera
+                        onTapDevicePoint: focusCamera,
+                        automationFocusRequest: automationFocusRequest
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                 } else {
@@ -87,11 +92,27 @@ struct LiveScanView: View {
             cameraControlState = CameraControlState(
                 torchEnabled: cameraControlState.torchEnabled,
                 exposureBias: cameraControlState.exposureBias,
-                supportedExposureRange: range
+                supportedExposureRange: range,
+                zoomFactor: cameraControlState.zoomFactor,
+                supportedZoomRange: cameraControlState.supportedZoomRange
             )
         }
+        .onReceive(cameraController.$supportedZoomRange) { range in
+            cameraControlState = CameraControlState(
+                torchEnabled: cameraControlState.torchEnabled,
+                exposureBias: cameraControlState.exposureBias,
+                supportedExposureRange: cameraControlState.supportedExposureRange,
+                zoomFactor: cameraControlState.zoomFactor,
+                supportedZoomRange: range
+            )
+        }
+        .onReceive(cameraController.$currentZoomFactor) { zoomFactor in
+            var nextState = cameraControlState
+            nextState.setZoomFactor(zoomFactor)
+            cameraControlState = nextState
+        }
         .onReceive(cameraController.$latestError.compactMap { $0 }) { message in
-            liveScanMessage = message
+            publishScanMessage(message, priority: .error)
         }
     }
 
@@ -106,7 +127,7 @@ struct LiveScanView: View {
     private func prepareCamera() async {
         hasCameraAccess = await cameraController.requestAccess()
         guard hasCameraAccess else {
-            liveScanMessage = "Camera access is required for live scanning."
+            publishScanMessage("Camera access is required for live scanning.", priority: .error)
             return
         }
 
@@ -116,7 +137,10 @@ struct LiveScanView: View {
                 gridHeight: session.confidenceMap.height,
                 onObservation: { observation in
                     session.addFrame(observation)
-                    liveScanMessage = message(for: session.scanGuidance())
+                    publishScanMessage(message(for: session.scanGuidance()), priority: .guidance)
+                    if let latestFrameQuality {
+                        applyAutomation(metrics: latestFrameQuality)
+                    }
                 },
                 onSnapshot: { snapshot in
                     latestSnapshot = snapshot
@@ -124,14 +148,17 @@ struct LiveScanView: View {
                         bestSnapshot = snapshot
                     }
                 },
+                onFrameQuality: { metrics in
+                    latestFrameQuality = metrics
+                },
                 onError: { message in
-                    liveScanMessage = message
+                    publishScanMessage(message, priority: .qualityWarning)
                 }
             )
         }
 
         cameraController.frameConsumer = frameProcessor
-        liveScanMessage = "Hold the full document in frame so all edges are visible."
+        publishScanMessage("Hold the full document in frame so all edges are visible.", priority: .guidance)
         cameraController.configure()
         cameraController.start()
     }
@@ -151,18 +178,18 @@ struct LiveScanView: View {
 
     private func focusCamera(at devicePoint: CGPoint) {
         guard cameraController.cameraControlsAvailable else {
-            liveScanMessage = "Camera focus controls are available on iPhone."
+            publishScanMessage("Camera focus controls are available on iPhone.", priority: .error)
             return
         }
 
         cameraController.setFocusAndExposurePoint(devicePoint) { _, message in
-            liveScanMessage = message
+            publishScanMessage(message, priority: .automation)
         }
     }
 
     private func updateTorch(isEnabled: Bool) {
         guard cameraController.cameraControlsAvailable else {
-            liveScanMessage = "Torch controls are available on iPhone."
+            publishScanMessage("Torch controls are available on iPhone.", priority: .error)
             return
         }
 
@@ -171,13 +198,13 @@ struct LiveScanView: View {
                 cameraControlState.torchEnabled = isEnabled
             }
 
-            liveScanMessage = message
+            publishScanMessage(message, priority: .automation)
         }
     }
 
     private func updateExposure(_ value: Float) {
         guard cameraController.cameraControlsAvailable else {
-            liveScanMessage = "Exposure controls are available on iPhone."
+            publishScanMessage("Exposure controls are available on iPhone.", priority: .error)
             return
         }
 
@@ -187,10 +214,60 @@ struct LiveScanView: View {
         cameraController.setExposureBias(requestedState.exposureBias) { success, message in
             if success {
                 cameraControlState = requestedState
-                liveScanMessage = "Exposure set to \(requestedState.exposureLabel.lowercased())."
+                publishScanMessage(
+                    "Exposure set to \(requestedState.exposureLabel.lowercased()).",
+                    priority: .automation
+                )
             } else {
-                liveScanMessage = message
+                publishScanMessage(message, priority: .error)
             }
+        }
+    }
+
+    private func updateZoom(_ value: CGFloat) {
+        guard cameraController.cameraControlsAvailable else {
+            publishScanMessage("Zoom controls are available on iPhone.", priority: .error)
+            return
+        }
+
+        var requestedState = cameraControlState
+        requestedState.setZoomFactor(value)
+
+        cameraController.setZoomFactor(requestedState.zoomFactor) { success, message in
+            if success {
+                cameraControlState = requestedState
+            }
+
+            publishScanMessage(message, priority: success ? .automation : .error)
+        }
+    }
+
+    private func applyAutomation(metrics: FrameQualityMetrics) {
+        let decision = automationController.nextDecision(
+            metrics: metrics,
+            guidance: session.scanGuidance(),
+            cameraState: cameraControlState
+        )
+
+        switch decision.command {
+        case .none:
+            return
+        case .enableTorch:
+            updateTorch(isEnabled: true)
+        case .disableTorch:
+            updateTorch(isEnabled: false)
+        case let .setExposureBias(value):
+            updateExposure(value)
+        case let .focusAt(point):
+            automationFocusRequest = CameraFocusRequest(normalizedPreviewPoint: point)
+        case let .setZoom(value):
+            updateZoom(value)
+        case let .showGuidance(message):
+            publishScanMessage(message, priority: .automation)
+        }
+
+        if let message = decision.message {
+            publishScanMessage(message, priority: .automation)
         }
     }
 
@@ -200,8 +277,13 @@ struct LiveScanView: View {
                 cameraControlState.reset()
             }
 
-            liveScanMessage = message
+            publishScanMessage(message, priority: success ? .automation : .error)
         }
+    }
+
+    private func publishScanMessage(_ message: String, priority: ScanMessagePriority) {
+        messageCoordinator.submit(message, priority: priority)
+        liveScanMessage = messageCoordinator.currentMessage
     }
 
     private func addSimulatedFrame() {
