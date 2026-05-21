@@ -12,13 +12,17 @@ struct LiveScanView: View {
     @State private var frameProcessor: ScanFrameProcessor?
     @State private var liveScanMessage: String?
     @State private var latestSnapshot: DocumentSnapshot?
+    @State private var cameraControlState = CameraControlState()
 
     var body: some View {
         VStack(spacing: 18) {
             ZStack {
                 if hasCameraAccess {
-                    CameraPreviewView(session: cameraController.captureSession)
-                        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                    CameraPreviewView(
+                        session: cameraController.captureSession,
+                        onTapDevicePoint: focusCamera
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                 } else {
                     CameraPreviewPlaceholder()
                 }
@@ -39,6 +43,15 @@ struct LiveScanView: View {
 
             ScanGuidancePanel(guidance: scanGuidance)
                 .padding(.horizontal, 16)
+
+            CameraAssistPanel(
+                state: cameraControlState,
+                controlsAvailable: cameraController.cameraControlsAvailable,
+                onTorchChanged: updateTorch,
+                onExposureChanged: updateExposure,
+                onReset: resetCameraControls
+            )
+            .padding(.horizontal, 16)
 
             if let liveScanMessage {
                 Text(liveScanMessage)
@@ -69,6 +82,16 @@ struct LiveScanView: View {
         }
         .onDisappear {
             cameraController.stop()
+        }
+        .onReceive(cameraController.$supportedExposureRange) { range in
+            cameraControlState = CameraControlState(
+                torchEnabled: cameraControlState.torchEnabled,
+                exposureBias: cameraControlState.exposureBias,
+                supportedExposureRange: range
+            )
+        }
+        .onReceive(cameraController.$latestError.compactMap { $0 }) { message in
+            liveScanMessage = message
         }
     }
 
@@ -123,6 +146,61 @@ struct LiveScanView: View {
             return "Document flattened. Hold steady while the overlay settles."
         case .readyForReview:
             return "Page has enough evidence for review."
+        }
+    }
+
+    private func focusCamera(at devicePoint: CGPoint) {
+        guard cameraController.cameraControlsAvailable else {
+            liveScanMessage = "Camera focus controls are available on iPhone."
+            return
+        }
+
+        cameraController.setFocusAndExposurePoint(devicePoint) { _, message in
+            liveScanMessage = message
+        }
+    }
+
+    private func updateTorch(isEnabled: Bool) {
+        guard cameraController.cameraControlsAvailable else {
+            liveScanMessage = "Torch controls are available on iPhone."
+            return
+        }
+
+        cameraController.setTorch(enabled: isEnabled) { success, message in
+            if success {
+                cameraControlState.torchEnabled = isEnabled
+            }
+
+            liveScanMessage = message
+        }
+    }
+
+    private func updateExposure(_ value: Float) {
+        guard cameraController.cameraControlsAvailable else {
+            liveScanMessage = "Exposure controls are available on iPhone."
+            return
+        }
+
+        var requestedState = cameraControlState
+        requestedState.setExposureBias(value)
+
+        cameraController.setExposureBias(requestedState.exposureBias) { success, message in
+            if success {
+                cameraControlState = requestedState
+                liveScanMessage = "Exposure set to \(requestedState.exposureLabel.lowercased())."
+            } else {
+                liveScanMessage = message
+            }
+        }
+    }
+
+    private func resetCameraControls() {
+        cameraController.resetCameraControls { success, message in
+            if success {
+                cameraControlState.reset()
+            }
+
+            liveScanMessage = message
         }
     }
 
@@ -251,6 +329,76 @@ private struct ScanGuidancePanel: View {
         }
 
         return "column \(tile.coordinate.column + 1), row \(tile.coordinate.row + 1)"
+    }
+}
+
+private struct CameraAssistPanel: View {
+    let state: CameraControlState
+    let controlsAvailable: Bool
+    let onTorchChanged: (Bool) -> Void
+    let onExposureChanged: (Float) -> Void
+    let onReset: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Camera assist")
+                        .font(.headline)
+                    Text(statusText)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Button("Reset", action: onReset)
+                    .buttonStyle(.bordered)
+                    .disabled(!controlsAvailable)
+            }
+
+            Toggle(
+                "Torch",
+                isOn: Binding(
+                    get: { state.torchEnabled },
+                    set: onTorchChanged
+                )
+            )
+            .disabled(!controlsAvailable)
+
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Exposure")
+                    Spacer()
+                    Text(state.exposureLabel)
+                        .foregroundStyle(.secondary)
+                }
+                .font(.subheadline)
+
+                Slider(
+                    value: Binding(
+                        get: { Double(state.exposureBias) },
+                        set: { onExposureChanged(Float($0)) }
+                    ),
+                    in: Double(state.supportedExposureRange.lowerBound)...Double(state.supportedExposureRange.upperBound)
+                )
+                .disabled(!controlsAvailable)
+
+                Text("Increase only if text is too dark. Tap the camera preview to set focus and exposure.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(16)
+        .background(Color(uiColor: .secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .accessibilityElement(children: .contain)
+    }
+
+    private var statusText: String {
+        controlsAvailable
+            ? "Use light and exposure only when the text needs help."
+            : "Camera controls are available on iPhone."
     }
 }
 
