@@ -26,7 +26,8 @@ struct RootView: View {
                     session: session,
                     snapshot: bestSnapshot,
                     capturedPages: capturedPages,
-                    onAddPage: addCurrentPageAndContinue
+                    onAddPage: addCurrentPageAndContinue,
+                    onRemoveCapturedPage: removeCapturedPage
                 ) {
                     route = .scan
                 }
@@ -48,6 +49,10 @@ struct RootView: View {
         session = ProgressiveScanSession(gridWidth: 4, gridHeight: 6)
         self.bestSnapshot = nil
         route = .scan
+    }
+
+    private func removeCapturedPage(id: ScannedPage.ID) {
+        capturedPages.removeAll { $0.id == id }
     }
 }
 
