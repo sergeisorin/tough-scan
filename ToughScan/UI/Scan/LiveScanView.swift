@@ -3,12 +3,14 @@ import ToughScanCore
 
 struct LiveScanView: View {
     @Binding var session: ProgressiveScanSession
+    @Binding var bestSnapshot: DocumentSnapshot?
     let onReview: () -> Void
 
     @StateObject private var cameraController = CameraSessionController()
     @State private var hasCameraAccess = false
     @State private var frameProcessor: ScanFrameProcessor?
     @State private var liveScanMessage: String?
+    @State private var latestSnapshot: DocumentSnapshot?
 
     var body: some View {
         VStack(spacing: 18) {
@@ -19,14 +21,19 @@ struct LiveScanView: View {
                 } else {
                     CameraPreviewPlaceholder()
                 }
-
-                ConfidenceGridOverlay(map: session.confidenceMap)
-                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
             }
             .frame(maxWidth: .infinity)
             .frame(height: 460)
             .padding(.horizontal, 16)
-            .accessibilityLabel("Live scan preview with confidence overlay")
+            .accessibilityLabel("Live camera preview")
+
+            NormalizedDocumentPreviewView(
+                snapshot: bestSnapshot ?? latestSnapshot,
+                confidenceMap: session.confidenceMap,
+                showsOverlay: true
+            )
+            .frame(height: 220)
+            .padding(.horizontal, 16)
 
             ScanGuidancePanel(tile: session.guidanceSuggestion())
                 .padding(.horizontal, 16)
@@ -76,6 +83,12 @@ struct LiveScanView: View {
                 onObservation: { observation in
                     session.addFrame(observation)
                     liveScanMessage = "Document flattened. Live OCR updated \(observation.tileEvidence.count) region(s)."
+                },
+                onSnapshot: { snapshot in
+                    latestSnapshot = snapshot
+                    if snapshot.isBetterThan(bestSnapshot) {
+                        bestSnapshot = snapshot
+                    }
                 },
                 onError: { message in
                     liveScanMessage = message

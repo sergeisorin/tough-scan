@@ -4,6 +4,7 @@ import ToughScanCore
 struct RootView: View {
     @State private var route: Route = .start
     @State private var session = ProgressiveScanSession(gridWidth: 4, gridHeight: 6)
+    @State private var bestSnapshot: DocumentSnapshot?
 
     var body: some View {
         NavigationStack {
@@ -13,11 +14,17 @@ struct RootView: View {
                     route = .scan
                 }
             case .scan:
-                LiveScanView(session: $session) {
+                LiveScanView(
+                    session: $session,
+                    bestSnapshot: $bestSnapshot
+                ) {
                     route = .review
                 }
             case .review:
-                ScanReviewView(session: session) {
+                ScanReviewView(
+                    session: session,
+                    snapshot: bestSnapshot
+                ) {
                     route = .scan
                 }
             }
