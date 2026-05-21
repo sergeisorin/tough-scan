@@ -40,6 +40,7 @@
 		A98988512A41ADD6A562102B /* ImageEnhancerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00E3E52E966EA45B104E4DA7 /* ImageEnhancerTests.swift */; };
 		B119E0629A3689E66ED297DF /* DocumentDetectionGeometryMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2BB3E170AE881062874D0D /* DocumentDetectionGeometryMapper.swift */; };
 		B1887BA42AFAC7D3123ABB68 /* DocumentDetectionGeometryMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2BB3E170AE881062874D0D /* DocumentDetectionGeometryMapper.swift */; };
+		B379EE00D1FA4B5AD869412F /* TextLineConfidenceOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01D31F4400BCD1EAEF072AF6 /* TextLineConfidenceOverlay.swift */; };
 		BD390354DE2ABAC55EDB0FFD /* CameraControlStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A745083537F8F066FBD3F6F6 /* CameraControlStateTests.swift */; };
 		BD4479157C68A778F3A9C87D /* ImageEnhancer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C135D020D617896476EBE1D /* ImageEnhancer.swift */; };
 		BE20CE101D9DF0DCD8B31A17 /* ImageEnhancer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C135D020D617896476EBE1D /* ImageEnhancer.swift */; };
@@ -67,6 +68,7 @@
 /* Begin PBXFileReference section */
 		00E3E52E966EA45B104E4DA7 /* ImageEnhancerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEnhancerTests.swift; sourceTree = "<group>"; };
 		0178C0E678C2A7EC7DF55CBE /* ScanAutomationControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanAutomationControllerTests.swift; sourceTree = "<group>"; };
+		01D31F4400BCD1EAEF072AF6 /* TextLineConfidenceOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextLineConfidenceOverlay.swift; sourceTree = "<group>"; };
 		033A0F405BAED0AD130C9ABC /* ToughScan.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ToughScan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C9E1C269267EBF7292F456B /* PerspectiveNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerspectiveNormalizer.swift; sourceTree = "<group>"; };
 		0F8D59870DDBE52244D5CBE0 /* ConfidenceStateStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidenceStateStyle.swift; sourceTree = "<group>"; };
@@ -186,6 +188,7 @@
 			children = (
 				937222EB4807DBACD8677901 /* LiveTextImageView.swift */,
 				AAC81862EDA5A2DC5BDDB1BE /* ScanReviewView.swift */,
+				01D31F4400BCD1EAEF072AF6 /* TextLineConfidenceOverlay.swift */,
 			);
 			path = Review;
 			sourceTree = "<group>";
@@ -415,6 +418,7 @@
 				9881609C2A09EC657C826B9A /* ShareSheetView.swift in Sources */,
 				193404B4408A950C8FDAAF50 /* StructuredDocument.swift in Sources */,
 				52A4F76CC33B4934E73FB99D /* StructuredDocumentRecognitionService.swift in Sources */,
+				B379EE00D1FA4B5AD869412F /* TextLineConfidenceOverlay.swift in Sources */,
 				9093CC2976516591AC0BBA89 /* TextRecognitionService.swift in Sources */,
 				CA1E6CBA47370D0B07CB5592 /* ToughScanApp.swift in Sources */,
 			);
