@@ -18,7 +18,8 @@ final class TextRecognitionService: TextRecognizing {
                 text: region.text,
                 confidence: region.confidence,
                 languageCode: region.languageCode,
-                tileCoordinates: []
+                tileCoordinates: [],
+                boundingBox: region.boundingBox
             )
         }
     }

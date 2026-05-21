@@ -88,7 +88,8 @@ public struct TileEvidenceMapper: Sendable {
                     text: region.text,
                     confidence: region.confidence,
                     languageCode: region.languageCode,
-                    tileCoordinates: touchedTiles
+                    tileCoordinates: touchedTiles,
+                    boundingBox: region.boundingBox
                 )
             )
 

@@ -3,17 +3,20 @@ public struct RecognizedTextBlock: Equatable, Sendable {
     public let confidence: Double
     public let languageCode: String
     public let tileCoordinates: [TileCoordinate]
+    public let boundingBox: NormalizedRect?
 
     public init(
         text: String,
         confidence: Double,
         languageCode: String,
-        tileCoordinates: [TileCoordinate]
+        tileCoordinates: [TileCoordinate],
+        boundingBox: NormalizedRect? = nil
     ) {
         self.text = text
         self.confidence = confidence.clampedToConfidenceRange
         self.languageCode = languageCode
         self.tileCoordinates = tileCoordinates
+        self.boundingBox = boundingBox
     }
 }
 
