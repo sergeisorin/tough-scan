@@ -31,12 +31,13 @@ struct LiveScanView: View {
             NormalizedDocumentPreviewView(
                 snapshot: bestSnapshot ?? latestSnapshot,
                 confidenceMap: session.confidenceMap,
-                showsOverlay: true
+                showsOverlay: true,
+                targetCoordinate: scanGuidance.targetTile?.coordinate
             )
             .frame(height: 220)
             .padding(.horizontal, 16)
 
-            ScanGuidancePanel(tile: session.guidanceSuggestion())
+            ScanGuidancePanel(guidance: scanGuidance)
                 .padding(.horizontal, 16)
 
             if let liveScanMessage {
@@ -55,7 +56,7 @@ struct LiveScanView: View {
 
                 Button("Review scan", action: onReview)
                     .buttonStyle(.borderedProminent)
-                    .disabled(bestSnapshot == nil)
+                    .disabled(!canReviewScan)
             }
             .controlSize(.large)
             .padding(.horizontal, 16)
@@ -71,6 +72,14 @@ struct LiveScanView: View {
         }
     }
 
+    private var scanGuidance: ScanGuidance {
+        session.scanGuidance()
+    }
+
+    private var canReviewScan: Bool {
+        bestSnapshot != nil && scanGuidance.readyForReview
+    }
+
     private func prepareCamera() async {
         hasCameraAccess = await cameraController.requestAccess()
         guard hasCameraAccess else {
@@ -84,7 +93,7 @@ struct LiveScanView: View {
                 gridHeight: session.confidenceMap.height,
                 onObservation: { observation in
                     session.addFrame(observation)
-                    liveScanMessage = "Document flattened. Live OCR updated \(observation.tileEvidence.count) region(s)."
+                    liveScanMessage = message(for: session.scanGuidance())
                 },
                 onSnapshot: { snapshot in
                     latestSnapshot = snapshot
@@ -104,25 +113,42 @@ struct LiveScanView: View {
         cameraController.start()
     }
 
+    private func message(for guidance: ScanGuidance) -> String {
+        switch guidance.action {
+        case .scanMissingRegion:
+            return "Document flattened. Keep scanning the highlighted missing region."
+        case .rescanWeakText:
+            return "Document flattened. Revisit the highlighted weak text region."
+        case .holdSteady:
+            return "Document flattened. Hold steady while the overlay settles."
+        case .readyForReview:
+            return "Page has enough evidence for review."
+        }
+    }
+
     private func addSimulatedFrame() {
-        let weakTile = session.guidanceSuggestion()?.coordinate ?? TileCoordinate(column: 0, row: 0)
+        let weakTiles = session.confidenceMap.weakestTiles(limit: 4)
+        let targetCoordinates = weakTiles.isEmpty
+            ? [TileCoordinate(column: 0, row: 0)]
+            : weakTiles.map(\.coordinate)
+
         session.addFrame(
             FrameObservation(
                 id: UUID().uuidString,
-                tileEvidence: [
+                tileEvidence: targetCoordinates.map { coordinate in
                     TileEvidence(
-                        coordinate: weakTile,
+                        coordinate: coordinate,
                         visualQuality: 0.84,
                         ocrConfidence: 0.78,
                         textCoverage: 0.68
                     )
-                ],
+                },
                 recognizedTextBlocks: [
                     RecognizedTextBlock(
                         text: "שלום / Sample",
                         confidence: 0.78,
                         languageCode: "he,en",
-                        tileCoordinates: [weakTile]
+                        tileCoordinates: targetCoordinates
                     )
                 ]
             )
@@ -170,7 +196,7 @@ private struct CameraPreviewPlaceholder: View {
 }
 
 private struct ScanGuidancePanel: View {
-    let tile: ScanTile?
+    let guidance: ScanGuidance
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
@@ -194,28 +220,37 @@ private struct ScanGuidancePanel: View {
     }
 
     private var title: String {
-        guard let tile else {
-            return "Scan is complete"
-        }
-
-        switch tile.state {
-        case .needsScan:
+        switch guidance.action {
+        case .scanMissingRegion:
             return "Scan missing region"
-        case .veryUncertain:
+        case .rescanWeakText:
             return "Rescan weak text"
-        case .uncertain:
-            return "Review this area"
-        case .successful:
-            return "Keep moving steadily"
+        case .holdSteady:
+            return "Hold steady"
+        case .readyForReview:
+            return "Page ready for review"
         }
     }
 
     private var message: String {
-        guard let tile else {
-            return "All regions have enough evidence for review."
+        switch guidance.action {
+        case .scanMissingRegion:
+            return "Aim at \(targetDescription). Hold the full page steady until the region fills in."
+        case .rescanWeakText:
+            return "Move back to \(targetDescription) and hold steady for another pass."
+        case .holdSteady:
+            return "The page is detected. Keep it still while the overlay settles."
+        case .readyForReview:
+            return "Enough evidence has been collected. Review or add another page."
+        }
+    }
+
+    private var targetDescription: String {
+        guard let tile = guidance.targetTile else {
+            return "the highlighted region"
         }
 
-        return "Aim at column \(tile.coordinate.column + 1), row \(tile.coordinate.row + 1). Hold steady until the overlay settles."
+        return "column \(tile.coordinate.column + 1), row \(tile.coordinate.row + 1)"
     }
 }
 

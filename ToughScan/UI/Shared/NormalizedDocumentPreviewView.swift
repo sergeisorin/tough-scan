@@ -5,6 +5,7 @@ struct NormalizedDocumentPreviewView: View {
     let snapshot: DocumentSnapshot?
     let confidenceMap: TileConfidenceMap
     let showsOverlay: Bool
+    var targetCoordinate: TileCoordinate? = nil
 
     var body: some View {
         ZStack {
@@ -21,7 +22,10 @@ struct NormalizedDocumentPreviewView: View {
                             .accessibilityLabel("Flattened document preview")
 
                         if showsOverlay {
-                            ConfidenceGridOverlay(map: confidenceMap)
+                            ConfidenceGridOverlay(
+                                map: confidenceMap,
+                                targetCoordinate: targetCoordinate
+                            )
                                 .accessibilityLabel("Confidence overlay aligned to flattened document")
                         }
                     }
