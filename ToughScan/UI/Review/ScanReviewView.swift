@@ -26,7 +26,8 @@ struct ScanReviewView: View {
                 NormalizedDocumentPreviewView(
                     snapshot: snapshot,
                     confidenceMap: session.confidenceMap,
-                    showsOverlay: true
+                    showsOverlay: true,
+                    recognizedTextBlocks: session.recognizedTextBlocks
                 )
                 .frame(height: 420)
 
@@ -157,11 +158,18 @@ private struct RecognizedTextPanel: View {
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
+                    let style = ConfidenceStateStyle.style(
+                        for: ScanConfidenceState.state(for: block.confidence)
+                    )
                     HStack(alignment: .top, spacing: 10) {
-                        Text("\(Int(block.confidence * 100))%")
-                            .font(.caption.monospacedDigit())
-                            .foregroundStyle(.secondary)
-                            .frame(width: 44, alignment: .trailing)
+                        VStack(alignment: .trailing, spacing: 4) {
+                            Text("\(Int(block.confidence * 100))%")
+                                .font(.caption.monospacedDigit())
+                            Text(style.title)
+                                .font(.caption2.weight(.semibold))
+                        }
+                        .foregroundStyle(style.color)
+                        .frame(width: 62, alignment: .trailing)
 
                         Text(block.text)
                             .font(.body)

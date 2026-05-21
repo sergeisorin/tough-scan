@@ -8,7 +8,7 @@ public enum ScanConfidenceState: Int, Comparable, Sendable {
         lhs.rawValue < rhs.rawValue
     }
 
-    static func state(for combinedConfidence: Double) -> ScanConfidenceState {
+    public static func state(for combinedConfidence: Double) -> ScanConfidenceState {
         switch combinedConfidence {
         case ..<0.01:
             return .needsScan

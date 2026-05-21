@@ -6,6 +6,7 @@ struct NormalizedDocumentPreviewView: View {
     let confidenceMap: TileConfidenceMap
     let showsOverlay: Bool
     var targetCoordinate: TileCoordinate? = nil
+    var recognizedTextBlocks: [RecognizedTextBlock] = []
 
     var body: some View {
         ZStack {
@@ -28,6 +29,8 @@ struct NormalizedDocumentPreviewView: View {
                             )
                                 .accessibilityLabel("Confidence overlay aligned to flattened document")
                         }
+
+                        TextLineConfidenceOverlay(blocks: recognizedTextBlocks)
                     }
                     .aspectRatio(
                         snapshot.image.size.width / max(snapshot.image.size.height, 1),
