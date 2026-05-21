@@ -2,9 +2,11 @@ import AVFoundation
 import CoreImage
 import Foundation
 import ToughScanCore
+import UIKit
 
 final class ScanFrameProcessor: CameraFrameConsumer {
     typealias ObservationHandler = @MainActor (FrameObservation) -> Void
+    typealias SnapshotHandler = @MainActor (DocumentSnapshot) -> Void
     typealias ErrorHandler = @MainActor (String) -> Void
 
     private let mapper: TileEvidenceMapper
@@ -16,6 +18,7 @@ final class ScanFrameProcessor: CameraFrameConsumer {
     private let processingQueue = DispatchQueue(label: "com.local.toughscan.scan-frame-processor")
     private let stateLock = NSLock()
     private let onObservation: ObservationHandler
+    private let onSnapshot: SnapshotHandler?
     private let onError: ErrorHandler?
 
     private var isProcessing = false
@@ -32,6 +35,7 @@ final class ScanFrameProcessor: CameraFrameConsumer {
         perspectiveNormalizer: PerspectiveNormalizing = PerspectiveNormalizer(),
         geometryStabilizer: DocumentGeometryStabilizer = DocumentGeometryStabilizer(),
         onObservation: @escaping ObservationHandler,
+        onSnapshot: SnapshotHandler? = nil,
         onError: ErrorHandler? = nil
     ) {
         self.mapper = TileEvidenceMapper(gridWidth: gridWidth, gridHeight: gridHeight)
@@ -42,6 +46,7 @@ final class ScanFrameProcessor: CameraFrameConsumer {
         self.geometryStabilizer = geometryStabilizer
         self.minimumFrameInterval = 1 / max(framesPerSecond, 1)
         self.onObservation = onObservation
+        self.onSnapshot = onSnapshot
         self.onError = onError
     }
 
@@ -106,12 +111,17 @@ final class ScanFrameProcessor: CameraFrameConsumer {
                         return
                     }
 
+                    let snapshot = DocumentSnapshot(
+                        image: UIImage(cgImage: cgImage),
+                        visualQuality: visualQuality
+                    )
                     let observation = FrameObservation(
                         id: UUID().uuidString,
                         tileEvidence: mapped.tileEvidence,
                         recognizedTextBlocks: mapped.recognizedTextBlocks
                     )
 
+                    await self.onSnapshot?(snapshot)
                     await self.onObservation(observation)
                 } catch {
                     await self.onError?("Live OCR failed. Keep scanning or try better light.")

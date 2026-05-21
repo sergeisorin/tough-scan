@@ -3,6 +3,7 @@ import ToughScanCore
 
 struct ScanReviewView: View {
     let session: ProgressiveScanSession
+    let snapshot: DocumentSnapshot?
     let onRescan: () -> Void
 
     var body: some View {
@@ -15,14 +16,11 @@ struct ScanReviewView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                ZStack {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(Color(uiColor: .systemBackground))
-                        .shadow(color: .black.opacity(0.08), radius: 18, y: 10)
-
-                    ConfidenceGridOverlay(map: session.confidenceMap)
-                        .padding(16)
-                }
+                NormalizedDocumentPreviewView(
+                    snapshot: snapshot,
+                    confidenceMap: session.confidenceMap,
+                    showsOverlay: true
+                )
                 .frame(height: 420)
 
                 ConfidenceLegend()
