@@ -1,0 +1,12 @@
+.build/
+.swiftpm/
+.vscode/
+DerivedData/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+.superpowers/
+.impeccable.md
+ARCHITECTURE.md
+REQUIREMENTS.md
+
