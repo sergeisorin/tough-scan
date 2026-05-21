@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  core-checks:
+    name: Core Swift checks
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Swift package
+        run: swift build
+
+      - name: Run core checks
+        run: swift run ToughScanCoreChecks
+
+  ios-build:
+    name: iOS app build
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build iOS app
+        run: xcodebuild -project ToughScan.xcodeproj -scheme ToughScan -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
