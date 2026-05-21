@@ -4,7 +4,14 @@ import ToughScanCore
 struct ScanReviewView: View {
     let session: ProgressiveScanSession
     let snapshot: DocumentSnapshot?
+    let capturedPages: [ScannedPage]
+    let onAddPage: () -> Void
     let onRescan: () -> Void
+
+    @State private var activeExportBundle: ScanExportBundle?
+    @State private var exportErrorMessage: String?
+
+    private let exportService = ScanExportService()
 
     var body: some View {
         ScrollView {
@@ -27,14 +34,25 @@ struct ScanReviewView: View {
 
                 RecognizedTextPanel(blocks: session.recognizedTextBlocks)
 
+                ExportSummaryPanel(pageCount: pagesForExport.count)
+
+                if let exportErrorMessage {
+                    Text(exportErrorMessage)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+
                 HStack(spacing: 12) {
                     Button("Rescan weak areas", action: onRescan)
                         .buttonStyle(.bordered)
 
-                    Button("Export local result") {
-                        // Export wiring lands after the first real document image is available.
-                    }
+                    Button("Add another page", action: onAddPage)
+                        .buttonStyle(.bordered)
+                        .disabled(snapshot == nil)
+
+                    Button("Export local result", action: prepareExport)
                     .buttonStyle(.borderedProminent)
+                    .disabled(pagesForExport.isEmpty)
                 }
                 .controlSize(.large)
             }
@@ -42,6 +60,54 @@ struct ScanReviewView: View {
         }
         .navigationTitle("Review")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(item: $activeExportBundle) { bundle in
+            ShareSheetView(activityItems: bundle.fileURLs) {
+                bundle.cleanup()
+                activeExportBundle = nil
+            }
+        }
+    }
+
+    private var currentPage: ScannedPage? {
+        guard let snapshot else {
+            return nil
+        }
+
+        return ScannedPage(
+            snapshot: snapshot,
+            recognizedTextBlocks: session.recognizedTextBlocks
+        )
+    }
+
+    private var pagesForExport: [ScannedPage] {
+        capturedPages + (currentPage.map { [$0] } ?? [])
+    }
+
+    private func prepareExport() {
+        do {
+            activeExportBundle = try exportService.makeExportBundle(from: pagesForExport)
+            exportErrorMessage = nil
+        } catch {
+            exportErrorMessage = "Could not prepare the local export. Try rescanning the page."
+        }
+    }
+}
+
+private struct ExportSummaryPanel: View {
+    let pageCount: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Pages ready: \(pageCount)")
+                .font(.headline)
+            Text("A single PDF and recovered text file will be prepared on this iPhone.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 }
 
