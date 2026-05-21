@@ -13,6 +13,8 @@ struct LiveScanView: View {
     @State private var liveScanMessage: String?
     @State private var latestSnapshot: DocumentSnapshot?
     @State private var cameraControlState = CameraControlState()
+    @State private var automationController = ScanAutomationController()
+    @State private var latestFrameQuality: FrameQualityMetrics?
 
     var body: some View {
         VStack(spacing: 18) {
@@ -87,8 +89,24 @@ struct LiveScanView: View {
             cameraControlState = CameraControlState(
                 torchEnabled: cameraControlState.torchEnabled,
                 exposureBias: cameraControlState.exposureBias,
-                supportedExposureRange: range
+                supportedExposureRange: range,
+                zoomFactor: cameraControlState.zoomFactor,
+                supportedZoomRange: cameraControlState.supportedZoomRange
             )
+        }
+        .onReceive(cameraController.$supportedZoomRange) { range in
+            cameraControlState = CameraControlState(
+                torchEnabled: cameraControlState.torchEnabled,
+                exposureBias: cameraControlState.exposureBias,
+                supportedExposureRange: cameraControlState.supportedExposureRange,
+                zoomFactor: cameraControlState.zoomFactor,
+                supportedZoomRange: range
+            )
+        }
+        .onReceive(cameraController.$currentZoomFactor) { zoomFactor in
+            var nextState = cameraControlState
+            nextState.setZoomFactor(zoomFactor)
+            cameraControlState = nextState
         }
         .onReceive(cameraController.$latestError.compactMap { $0 }) { message in
             liveScanMessage = message
@@ -117,12 +135,18 @@ struct LiveScanView: View {
                 onObservation: { observation in
                     session.addFrame(observation)
                     liveScanMessage = message(for: session.scanGuidance())
+                    if let latestFrameQuality {
+                        applyAutomation(metrics: latestFrameQuality)
+                    }
                 },
                 onSnapshot: { snapshot in
                     latestSnapshot = snapshot
                     if snapshot.isBetterThan(bestSnapshot) {
                         bestSnapshot = snapshot
                     }
+                },
+                onFrameQuality: { metrics in
+                    latestFrameQuality = metrics
                 },
                 onError: { message in
                     liveScanMessage = message
@@ -191,6 +215,53 @@ struct LiveScanView: View {
             } else {
                 liveScanMessage = message
             }
+        }
+    }
+
+    private func updateZoom(_ value: CGFloat) {
+        guard cameraController.cameraControlsAvailable else {
+            liveScanMessage = "Zoom controls are available on iPhone."
+            return
+        }
+
+        var requestedState = cameraControlState
+        requestedState.setZoomFactor(value)
+
+        cameraController.setZoomFactor(requestedState.zoomFactor) { success, message in
+            if success {
+                cameraControlState = requestedState
+            }
+
+            liveScanMessage = message
+        }
+    }
+
+    private func applyAutomation(metrics: FrameQualityMetrics) {
+        let decision = automationController.nextDecision(
+            metrics: metrics,
+            guidance: session.scanGuidance(),
+            cameraState: cameraControlState
+        )
+
+        switch decision.command {
+        case .none:
+            return
+        case .enableTorch:
+            updateTorch(isEnabled: true)
+        case .disableTorch:
+            updateTorch(isEnabled: false)
+        case let .setExposureBias(value):
+            updateExposure(value)
+        case let .focusAt(point):
+            focusCamera(at: point)
+        case let .setZoom(value):
+            updateZoom(value)
+        case let .showGuidance(message):
+            liveScanMessage = message
+        }
+
+        if let message = decision.message {
+            liveScanMessage = message
         }
     }
 

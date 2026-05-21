@@ -4,17 +4,26 @@ struct DocumentSnapshot: Identifiable {
     let id: UUID
     let image: UIImage
     let visualQuality: Double
+    let captureScore: Double
+    let averageOCRConfidence: Double
+    let textCoverage: Double
     let createdAt: Date
 
     init(
         id: UUID = UUID(),
         image: UIImage,
         visualQuality: Double,
+        captureScore: Double? = nil,
+        averageOCRConfidence: Double = 0,
+        textCoverage: Double = 0,
         createdAt: Date = Date()
     ) {
         self.id = id
         self.image = image.downscaledForDocumentPreview()
         self.visualQuality = min(max(visualQuality, 0), 1)
+        self.captureScore = min(max(captureScore ?? visualQuality, 0), 1)
+        self.averageOCRConfidence = min(max(averageOCRConfidence, 0), 1)
+        self.textCoverage = min(max(textCoverage, 0), 1)
         self.createdAt = createdAt
     }
 
@@ -23,7 +32,7 @@ struct DocumentSnapshot: Identifiable {
             return true
         }
 
-        return visualQuality > other.visualQuality
+        return captureScore > other.captureScore
     }
 }
 
