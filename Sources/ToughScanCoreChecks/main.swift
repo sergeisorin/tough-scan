@@ -9,6 +9,9 @@ struct ToughScanCoreChecks {
         testSessionStartsWithAllTilesNeedingScan()
         testAddingFrameImprovesCoveredTiles()
         testRepeatedTextBlockKeepsHighestConfidenceObservation()
+        testMappedTextBlockPreservesBoundingBox()
+        testRepeatedTextBlockKeepsHighestConfidenceBoundingBox()
+        testRecognizedTextBlockCanOmitBoundingBox()
         testGuidanceReturnsMostImportantWeakRegion()
         testScanGuidanceTargetsMissingRegionBeforeReview()
         testScanGuidanceTargetsVeryUncertainTextBeforeReview()
@@ -158,6 +161,72 @@ private func testRepeatedTextBlockKeepsHighestConfidenceObservation() {
 
     expect(session.recognizedTextBlocks.count == 1)
     expect(session.recognizedTextBlocks.first?.confidence == 0.82)
+}
+
+private func testMappedTextBlockPreservesBoundingBox() {
+    let mapper = TileEvidenceMapper(gridWidth: 2, gridHeight: 2)
+    let boundingBox = NormalizedRect(x: 0.10, y: 0.60, width: 0.30, height: 0.12)
+    let region = NormalizedTextRegion(
+        text: "Line text",
+        confidence: 0.84,
+        languageCode: "en",
+        boundingBox: boundingBox
+    )
+
+    let result = mapper.map(regions: [region], visualQuality: 0.80)
+
+    expect(result.recognizedTextBlocks.first?.boundingBox == boundingBox)
+}
+
+private func testRepeatedTextBlockKeepsHighestConfidenceBoundingBox() {
+    var session = ProgressiveScanSession(gridWidth: 1, gridHeight: 1)
+    let coordinate = TileCoordinate(column: 0, row: 0)
+    let firstBox = NormalizedRect(x: 0.10, y: 0.70, width: 0.40, height: 0.08)
+    let strongerBox = NormalizedRect(x: 0.12, y: 0.68, width: 0.44, height: 0.10)
+    let firstBlock = RecognizedTextBlock(
+        text: "Repeated text",
+        confidence: 0.55,
+        languageCode: "en",
+        tileCoordinates: [coordinate],
+        boundingBox: firstBox
+    )
+    let strongerBlock = RecognizedTextBlock(
+        text: "Repeated text",
+        confidence: 0.82,
+        languageCode: "en",
+        tileCoordinates: [coordinate],
+        boundingBox: strongerBox
+    )
+
+    session.addFrame(
+        FrameObservation(
+            id: "frame-1",
+            tileEvidence: [],
+            recognizedTextBlocks: [firstBlock]
+        )
+    )
+    session.addFrame(
+        FrameObservation(
+            id: "frame-2",
+            tileEvidence: [],
+            recognizedTextBlocks: [strongerBlock]
+        )
+    )
+
+    expect(session.recognizedTextBlocks.count == 1)
+    expect(session.recognizedTextBlocks.first?.confidence == 0.82)
+    expect(session.recognizedTextBlocks.first?.boundingBox == strongerBox)
+}
+
+private func testRecognizedTextBlockCanOmitBoundingBox() {
+    let block = RecognizedTextBlock(
+        text: "Legacy text",
+        confidence: 0.74,
+        languageCode: "en",
+        tileCoordinates: []
+    )
+
+    expect(block.boundingBox == nil)
 }
 
 private func testGuidanceReturnsMostImportantWeakRegion() {
