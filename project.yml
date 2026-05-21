@@ -38,9 +38,17 @@ targets:
       - ToughScan/Export/ScanExportBundle.swift
       - ToughScan/Export/ScanExportService.swift
       - ToughScan/Camera/CameraControlState.swift
+      - ToughScan/Camera/ScanAutomationController.swift
+      - ToughScan/Processing/DocumentDetectionGeometryMapper.swift
       - ToughScan/Processing/DocumentSnapshot.swift
+      - ToughScan/Processing/FrameQualityAnalyzer.swift
+      - ToughScan/Processing/FrameQualityMetrics.swift
+      - ToughScan/Processing/ImageEnhancer.swift
+      - ToughScan/Processing/LensSmudgeDetector.swift
       - ToughScan/Processing/ReviewPageSet.swift
+      - ToughScan/Processing/ScanMessageCoordinator.swift
       - ToughScan/Processing/ScannedPage.swift
+      - ToughScan/Processing/StructuredDocument.swift
     dependencies:
       - package: ToughScanPackage
         product: ToughScanCore

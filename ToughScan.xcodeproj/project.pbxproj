@@ -7,27 +7,42 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02CA84D7543255C2C03CD422 /* DocumentDetectionGeometryMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB50129202EF306E40F064B /* DocumentDetectionGeometryMapperTests.swift */; };
 		119BE043B6C8D232AED4F6EC /* ToughScanCore in Frameworks */ = {isa = PBXBuildFile; productRef = CC76BE126EA17E2305CA4442 /* ToughScanCore */; };
+		193404B4408A950C8FDAAF50 /* StructuredDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADA53CF71A6AB39C966E83BE /* StructuredDocument.swift */; };
+		1B23A6EFEF4D84A940CE826A /* FrameQualityAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66AF5629F3F7E4609907C3A /* FrameQualityAnalyzer.swift */; };
 		231D7CC1BA73079C68875B07 /* ReviewPageSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EB6CEAF54867DBC8F21B6EF /* ReviewPageSet.swift */; };
 		27395B660D657BA9E7D13A35 /* DocumentSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C77B0B2E436293F82CC24B5 /* DocumentSnapshot.swift */; };
 		28365114806EB29739E45EFB /* ScannedPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7749FCCACE9535C80BBA6BB7 /* ScannedPage.swift */; };
+		2915244E225E3D311A06A6C9 /* FrameQualityAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66AF5629F3F7E4609907C3A /* FrameQualityAnalyzer.swift */; };
 		3812A01A67AB94EEB2EAB815 /* ReviewPageSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EB6CEAF54867DBC8F21B6EF /* ReviewPageSet.swift */; };
+		4146404F706602A59318BD2B /* StructuredDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADA53CF71A6AB39C966E83BE /* StructuredDocument.swift */; };
+		457E4ED7D69C6361B1A20654 /* ScanAutomationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCAB6EA7094728C07B788253 /* ScanAutomationController.swift */; };
 		4DB430FE93822A676B8B08CC /* ScanFrameProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99AC13185ACE56799B528D7F /* ScanFrameProcessor.swift */; };
+		52A4F76CC33B4934E73FB99D /* StructuredDocumentRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71A512D247153307855A9E6 /* StructuredDocumentRecognitionService.swift */; };
+		544ABAEC05BDA8B297BC0FAC /* LiveTextImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 937222EB4807DBACD8677901 /* LiveTextImageView.swift */; };
 		54A73D8EC1EAC302B2C99652 /* ReviewPageSetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44D83CA69698900A7EABE868 /* ReviewPageSetTests.swift */; };
 		5DD361B545CF6A7BA6499E92 /* CameraControlState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48EB9803BA739625DB24357D /* CameraControlState.swift */; };
 		5E4EF76E9FE10CC31E4C0554 /* ConfidenceGridOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C145B6DE6173286F9BF2F107 /* ConfidenceGridOverlay.swift */; };
 		612A0AE6390D8C680EF95BA8 /* CameraSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 327D40757AA306AA44B59C7D /* CameraSessionController.swift */; };
 		6281A1A6349D8012E5487CC7 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0784D7BCE7E9B827A482442 /* RootView.swift */; };
+		675DF4BE58200473AEA83E5F /* ScanAutomationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCAB6EA7094728C07B788253 /* ScanAutomationController.swift */; };
 		6F0AB09F2DB13F3E50B4427A /* ScanExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA34A48C82867A0735120BB /* ScanExportService.swift */; };
 		8EF7DA9581DDB66B9B71A56E /* ScannedPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7749FCCACE9535C80BBA6BB7 /* ScannedPage.swift */; };
 		9093CC2976516591AC0BBA89 /* TextRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA96750E73F93C6D18B4136 /* TextRecognitionService.swift */; };
 		92EFE5D6437977CA41568DC6 /* ToughScanCore in Frameworks */ = {isa = PBXBuildFile; productRef = 14FD30A2EF9A3CDA810FF52F /* ToughScanCore */; };
 		9881609C2A09EC657C826B9A /* ShareSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8580ECFBCC79BDA06ECB5AF2 /* ShareSheetView.swift */; };
+		99E6B6073939F9A99A6E3166 /* LensSmudgeDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DE8640402E77E78C8686147 /* LensSmudgeDetector.swift */; };
 		9B9F8B04FB89E9CA12BFF8FF /* CameraControlState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48EB9803BA739625DB24357D /* CameraControlState.swift */; };
+		9DC0974CEC7431D59A65A4ED /* DocumentSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DF5E0666C1F555ECE397906 /* DocumentSnapshotTests.swift */; };
 		9EAA8F52A9629D26C029A824 /* LiveScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887E7FD673C7E68C35AF5A0F /* LiveScanView.swift */; };
 		A937D6F22D1A4E647CBEE137 /* NormalizedDocumentPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF35FED8AAB8B6B2DC4BBABC /* NormalizedDocumentPreviewView.swift */; };
+		A98988512A41ADD6A562102B /* ImageEnhancerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00E3E52E966EA45B104E4DA7 /* ImageEnhancerTests.swift */; };
+		B119E0629A3689E66ED297DF /* DocumentDetectionGeometryMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2BB3E170AE881062874D0D /* DocumentDetectionGeometryMapper.swift */; };
+		B1887BA42AFAC7D3123ABB68 /* DocumentDetectionGeometryMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2BB3E170AE881062874D0D /* DocumentDetectionGeometryMapper.swift */; };
 		B379EE00D1FA4B5AD869412F /* TextLineConfidenceOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01D31F4400BCD1EAEF072AF6 /* TextLineConfidenceOverlay.swift */; };
 		BD390354DE2ABAC55EDB0FFD /* CameraControlStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A745083537F8F066FBD3F6F6 /* CameraControlStateTests.swift */; };
+		BD4479157C68A778F3A9C87D /* ImageEnhancer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C135D020D617896476EBE1D /* ImageEnhancer.swift */; };
 		BE20CE101D9DF0DCD8B31A17 /* ImageEnhancer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C135D020D617896476EBE1D /* ImageEnhancer.swift */; };
 		C006D5BE919E1E2747B19F5F /* ScanExportBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A511DED11126783F6C195158 /* ScanExportBundle.swift */; };
 		C0D0230273F1FB0B32FCB98C /* ScanExportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38D150155C8B36832194E9BD /* ScanExportServiceTests.swift */; };
@@ -35,14 +50,24 @@
 		C546682E145CF0AFD5E857E7 /* PerspectiveNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9E1C269267EBF7292F456B /* PerspectiveNormalizer.swift */; };
 		CA1E6CBA47370D0B07CB5592 /* ToughScanApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 225CE543C171F82E6E5634C3 /* ToughScanApp.swift */; };
 		CB336133EF90C92F17040337 /* DocumentDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21E69B44A8CCA88040658FC0 /* DocumentDetectionService.swift */; };
+		D34759BBAD7D5916EE15B810 /* FrameQualityMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415CC34FE7C7BE37FE098B03 /* FrameQualityMetrics.swift */; };
+		D42A0864DBCF55E6B5B8F64A /* FrameQualityAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE836B43792465ECB1A4D089 /* FrameQualityAnalyzerTests.swift */; };
+		D634072555979826DBF2DA19 /* FrameQualityMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415CC34FE7C7BE37FE098B03 /* FrameQualityMetrics.swift */; };
 		D874B86BE0CC3C9D908B9929 /* ScanExportBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A511DED11126783F6C195158 /* ScanExportBundle.swift */; };
 		DCBB5B83BB27626A0AC43E28 /* ConfidenceStateStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F8D59870DDBE52244D5CBE0 /* ConfidenceStateStyle.swift */; };
 		DD2A7676776C7DC9712AFD0D /* DocumentSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C77B0B2E436293F82CC24B5 /* DocumentSnapshot.swift */; };
+		E0AACAF809C30773343FC05E /* LensSmudgeDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DE8640402E77E78C8686147 /* LensSmudgeDetector.swift */; };
+		E74B6325BB1CC207A58F8FF8 /* ScanAutomationControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0178C0E678C2A7EC7DF55CBE /* ScanAutomationControllerTests.swift */; };
+		EAD69784B34FE24E96952D8D /* ScanMessageCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7270EF3287099636B9F183 /* ScanMessageCoordinator.swift */; };
+		EEC9D6FF89A4E4BF071D78A2 /* ScanMessageCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7270EF3287099636B9F183 /* ScanMessageCoordinator.swift */; };
+		F4015C72A01CF9EF9687C3B5 /* ScanMessageCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C047E1B0FC37B194800C7512 /* ScanMessageCoordinatorTests.swift */; };
 		FD8D89EEA9734C917220A601 /* ScanReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAC81862EDA5A2DC5BDDB1BE /* ScanReviewView.swift */; };
 		FEBF74C90CDDD0409375420B /* ScanExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA34A48C82867A0735120BB /* ScanExportService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		00E3E52E966EA45B104E4DA7 /* ImageEnhancerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEnhancerTests.swift; sourceTree = "<group>"; };
+		0178C0E678C2A7EC7DF55CBE /* ScanAutomationControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanAutomationControllerTests.swift; sourceTree = "<group>"; };
 		01D31F4400BCD1EAEF072AF6 /* TextLineConfidenceOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextLineConfidenceOverlay.swift; sourceTree = "<group>"; };
 		033A0F405BAED0AD130C9ABC /* ToughScan.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ToughScan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C9E1C269267EBF7292F456B /* PerspectiveNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerspectiveNormalizer.swift; sourceTree = "<group>"; };
@@ -50,28 +75,41 @@
 		1C77B0B2E436293F82CC24B5 /* DocumentSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentSnapshot.swift; sourceTree = "<group>"; };
 		21E69B44A8CCA88040658FC0 /* DocumentDetectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentDetectionService.swift; sourceTree = "<group>"; };
 		225CE543C171F82E6E5634C3 /* ToughScanApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToughScanApp.swift; sourceTree = "<group>"; };
+		2AB50129202EF306E40F064B /* DocumentDetectionGeometryMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentDetectionGeometryMapperTests.swift; sourceTree = "<group>"; };
 		2EB6CEAF54867DBC8F21B6EF /* ReviewPageSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewPageSet.swift; sourceTree = "<group>"; };
 		327D40757AA306AA44B59C7D /* CameraSessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSessionController.swift; sourceTree = "<group>"; };
 		38D150155C8B36832194E9BD /* ScanExportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanExportServiceTests.swift; sourceTree = "<group>"; };
+		3DE8640402E77E78C8686147 /* LensSmudgeDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LensSmudgeDetector.swift; sourceTree = "<group>"; };
+		415CC34FE7C7BE37FE098B03 /* FrameQualityMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameQualityMetrics.swift; sourceTree = "<group>"; };
 		44D83CA69698900A7EABE868 /* ReviewPageSetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewPageSetTests.swift; sourceTree = "<group>"; };
 		48EB9803BA739625DB24357D /* CameraControlState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraControlState.swift; sourceTree = "<group>"; };
 		55F5A4AAE84221C72AACF760 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5D9DF4ACE753A71C687C07F8 /* tough-scan */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "tough-scan"; path = .; sourceTree = SOURCE_ROOT; };
+		6C7270EF3287099636B9F183 /* ScanMessageCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanMessageCoordinator.swift; sourceTree = "<group>"; };
 		6DD210C6F1E08EAA4555FCFE /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
 		7749FCCACE9535C80BBA6BB7 /* ScannedPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannedPage.swift; sourceTree = "<group>"; };
+		7DF5E0666C1F555ECE397906 /* DocumentSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentSnapshotTests.swift; sourceTree = "<group>"; };
 		8580ECFBCC79BDA06ECB5AF2 /* ShareSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheetView.swift; sourceTree = "<group>"; };
 		887E7FD673C7E68C35AF5A0F /* LiveScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveScanView.swift; sourceTree = "<group>"; };
 		8C135D020D617896476EBE1D /* ImageEnhancer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEnhancer.swift; sourceTree = "<group>"; };
+		937222EB4807DBACD8677901 /* LiveTextImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTextImageView.swift; sourceTree = "<group>"; };
 		99AC13185ACE56799B528D7F /* ScanFrameProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanFrameProcessor.swift; sourceTree = "<group>"; };
 		A511DED11126783F6C195158 /* ScanExportBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanExportBundle.swift; sourceTree = "<group>"; };
 		A745083537F8F066FBD3F6F6 /* CameraControlStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraControlStateTests.swift; sourceTree = "<group>"; };
 		AAC81862EDA5A2DC5BDDB1BE /* ScanReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanReviewView.swift; sourceTree = "<group>"; };
 		AC192AD5CF739A8CABE7A6E2 /* ToughScanTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ToughScanTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		ADA53CF71A6AB39C966E83BE /* StructuredDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StructuredDocument.swift; sourceTree = "<group>"; };
 		AF35FED8AAB8B6B2DC4BBABC /* NormalizedDocumentPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NormalizedDocumentPreviewView.swift; sourceTree = "<group>"; };
+		B66AF5629F3F7E4609907C3A /* FrameQualityAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameQualityAnalyzer.swift; sourceTree = "<group>"; };
 		BDA96750E73F93C6D18B4136 /* TextRecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextRecognitionService.swift; sourceTree = "<group>"; };
+		BE836B43792465ECB1A4D089 /* FrameQualityAnalyzerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameQualityAnalyzerTests.swift; sourceTree = "<group>"; };
+		C047E1B0FC37B194800C7512 /* ScanMessageCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanMessageCoordinatorTests.swift; sourceTree = "<group>"; };
 		C145B6DE6173286F9BF2F107 /* ConfidenceGridOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidenceGridOverlay.swift; sourceTree = "<group>"; };
+		CCAB6EA7094728C07B788253 /* ScanAutomationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanAutomationController.swift; sourceTree = "<group>"; };
+		DD2BB3E170AE881062874D0D /* DocumentDetectionGeometryMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentDetectionGeometryMapper.swift; sourceTree = "<group>"; };
 		DEA34A48C82867A0735120BB /* ScanExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanExportService.swift; sourceTree = "<group>"; };
 		E0784D7BCE7E9B827A482442 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		E71A512D247153307855A9E6 /* StructuredDocumentRecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StructuredDocumentRecognitionService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,13 +153,20 @@
 		251F2899A1D5A317B73D4380 /* Processing */ = {
 			isa = PBXGroup;
 			children = (
+				DD2BB3E170AE881062874D0D /* DocumentDetectionGeometryMapper.swift */,
 				21E69B44A8CCA88040658FC0 /* DocumentDetectionService.swift */,
 				1C77B0B2E436293F82CC24B5 /* DocumentSnapshot.swift */,
+				B66AF5629F3F7E4609907C3A /* FrameQualityAnalyzer.swift */,
+				415CC34FE7C7BE37FE098B03 /* FrameQualityMetrics.swift */,
 				8C135D020D617896476EBE1D /* ImageEnhancer.swift */,
+				3DE8640402E77E78C8686147 /* LensSmudgeDetector.swift */,
 				0C9E1C269267EBF7292F456B /* PerspectiveNormalizer.swift */,
 				2EB6CEAF54867DBC8F21B6EF /* ReviewPageSet.swift */,
 				99AC13185ACE56799B528D7F /* ScanFrameProcessor.swift */,
+				6C7270EF3287099636B9F183 /* ScanMessageCoordinator.swift */,
 				7749FCCACE9535C80BBA6BB7 /* ScannedPage.swift */,
+				ADA53CF71A6AB39C966E83BE /* StructuredDocument.swift */,
+				E71A512D247153307855A9E6 /* StructuredDocumentRecognitionService.swift */,
 				BDA96750E73F93C6D18B4136 /* TextRecognitionService.swift */,
 			);
 			path = Processing;
@@ -133,6 +178,7 @@
 				48EB9803BA739625DB24357D /* CameraControlState.swift */,
 				6DD210C6F1E08EAA4555FCFE /* CameraPreviewView.swift */,
 				327D40757AA306AA44B59C7D /* CameraSessionController.swift */,
+				CCAB6EA7094728C07B788253 /* ScanAutomationController.swift */,
 			);
 			path = Camera;
 			sourceTree = "<group>";
@@ -140,6 +186,7 @@
 		44457DE5F26B9959B2DF125B /* Review */ = {
 			isa = PBXGroup;
 			children = (
+				937222EB4807DBACD8677901 /* LiveTextImageView.swift */,
 				AAC81862EDA5A2DC5BDDB1BE /* ScanReviewView.swift */,
 				01D31F4400BCD1EAEF072AF6 /* TextLineConfidenceOverlay.swift */,
 			);
@@ -169,11 +216,24 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
+		625DA95558DA53A41A1851F6 /* Processing */ = {
+			isa = PBXGroup;
+			children = (
+				2AB50129202EF306E40F064B /* DocumentDetectionGeometryMapperTests.swift */,
+				7DF5E0666C1F555ECE397906 /* DocumentSnapshotTests.swift */,
+				BE836B43792465ECB1A4D089 /* FrameQualityAnalyzerTests.swift */,
+				00E3E52E966EA45B104E4DA7 /* ImageEnhancerTests.swift */,
+				C047E1B0FC37B194800C7512 /* ScanMessageCoordinatorTests.swift */,
+			);
+			path = Processing;
+			sourceTree = "<group>";
+		};
 		70D5FB1DA7AADD515C2B2B3D /* ToughScanTests */ = {
 			isa = PBXGroup;
 			children = (
 				7A32F3D125A28EA6DDA9A477 /* Camera */,
 				C493054EA36F5E18A1FD18A9 /* Export */,
+				625DA95558DA53A41A1851F6 /* Processing */,
 				1D3D7052043626B707E8B440 /* Review */,
 			);
 			path = ToughScanTests;
@@ -200,6 +260,7 @@
 			isa = PBXGroup;
 			children = (
 				A745083537F8F066FBD3F6F6 /* CameraControlStateTests.swift */,
+				0178C0E678C2A7EC7DF55CBE /* ScanAutomationControllerTests.swift */,
 			);
 			path = Camera;
 			sourceTree = "<group>";
@@ -334,20 +395,29 @@
 				612A0AE6390D8C680EF95BA8 /* CameraSessionController.swift in Sources */,
 				5E4EF76E9FE10CC31E4C0554 /* ConfidenceGridOverlay.swift in Sources */,
 				DCBB5B83BB27626A0AC43E28 /* ConfidenceStateStyle.swift in Sources */,
+				B1887BA42AFAC7D3123ABB68 /* DocumentDetectionGeometryMapper.swift in Sources */,
 				CB336133EF90C92F17040337 /* DocumentDetectionService.swift in Sources */,
 				27395B660D657BA9E7D13A35 /* DocumentSnapshot.swift in Sources */,
+				1B23A6EFEF4D84A940CE826A /* FrameQualityAnalyzer.swift in Sources */,
+				D634072555979826DBF2DA19 /* FrameQualityMetrics.swift in Sources */,
 				BE20CE101D9DF0DCD8B31A17 /* ImageEnhancer.swift in Sources */,
+				99E6B6073939F9A99A6E3166 /* LensSmudgeDetector.swift in Sources */,
 				9EAA8F52A9629D26C029A824 /* LiveScanView.swift in Sources */,
+				544ABAEC05BDA8B297BC0FAC /* LiveTextImageView.swift in Sources */,
 				A937D6F22D1A4E647CBEE137 /* NormalizedDocumentPreviewView.swift in Sources */,
 				C546682E145CF0AFD5E857E7 /* PerspectiveNormalizer.swift in Sources */,
 				3812A01A67AB94EEB2EAB815 /* ReviewPageSet.swift in Sources */,
 				6281A1A6349D8012E5487CC7 /* RootView.swift in Sources */,
+				457E4ED7D69C6361B1A20654 /* ScanAutomationController.swift in Sources */,
 				D874B86BE0CC3C9D908B9929 /* ScanExportBundle.swift in Sources */,
 				FEBF74C90CDDD0409375420B /* ScanExportService.swift in Sources */,
 				4DB430FE93822A676B8B08CC /* ScanFrameProcessor.swift in Sources */,
+				EAD69784B34FE24E96952D8D /* ScanMessageCoordinator.swift in Sources */,
 				FD8D89EEA9734C917220A601 /* ScanReviewView.swift in Sources */,
 				8EF7DA9581DDB66B9B71A56E /* ScannedPage.swift in Sources */,
 				9881609C2A09EC657C826B9A /* ShareSheetView.swift in Sources */,
+				193404B4408A950C8FDAAF50 /* StructuredDocument.swift in Sources */,
+				52A4F76CC33B4934E73FB99D /* StructuredDocumentRecognitionService.swift in Sources */,
 				B379EE00D1FA4B5AD869412F /* TextLineConfidenceOverlay.swift in Sources */,
 				9093CC2976516591AC0BBA89 /* TextRecognitionService.swift in Sources */,
 				CA1E6CBA47370D0B07CB5592 /* ToughScanApp.swift in Sources */,
@@ -360,13 +430,27 @@
 			files = (
 				5DD361B545CF6A7BA6499E92 /* CameraControlState.swift in Sources */,
 				BD390354DE2ABAC55EDB0FFD /* CameraControlStateTests.swift in Sources */,
+				B119E0629A3689E66ED297DF /* DocumentDetectionGeometryMapper.swift in Sources */,
+				02CA84D7543255C2C03CD422 /* DocumentDetectionGeometryMapperTests.swift in Sources */,
 				DD2A7676776C7DC9712AFD0D /* DocumentSnapshot.swift in Sources */,
+				9DC0974CEC7431D59A65A4ED /* DocumentSnapshotTests.swift in Sources */,
+				2915244E225E3D311A06A6C9 /* FrameQualityAnalyzer.swift in Sources */,
+				D42A0864DBCF55E6B5B8F64A /* FrameQualityAnalyzerTests.swift in Sources */,
+				D34759BBAD7D5916EE15B810 /* FrameQualityMetrics.swift in Sources */,
+				BD4479157C68A778F3A9C87D /* ImageEnhancer.swift in Sources */,
+				A98988512A41ADD6A562102B /* ImageEnhancerTests.swift in Sources */,
+				E0AACAF809C30773343FC05E /* LensSmudgeDetector.swift in Sources */,
 				231D7CC1BA73079C68875B07 /* ReviewPageSet.swift in Sources */,
 				54A73D8EC1EAC302B2C99652 /* ReviewPageSetTests.swift in Sources */,
+				675DF4BE58200473AEA83E5F /* ScanAutomationController.swift in Sources */,
+				E74B6325BB1CC207A58F8FF8 /* ScanAutomationControllerTests.swift in Sources */,
 				C006D5BE919E1E2747B19F5F /* ScanExportBundle.swift in Sources */,
 				6F0AB09F2DB13F3E50B4427A /* ScanExportService.swift in Sources */,
 				C0D0230273F1FB0B32FCB98C /* ScanExportServiceTests.swift in Sources */,
+				EEC9D6FF89A4E4BF071D78A2 /* ScanMessageCoordinator.swift in Sources */,
+				F4015C72A01CF9EF9687C3B5 /* ScanMessageCoordinatorTests.swift in Sources */,
 				28365114806EB29739E45EFB /* ScannedPage.swift in Sources */,
+				4146404F706602A59318BD2B /* StructuredDocument.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

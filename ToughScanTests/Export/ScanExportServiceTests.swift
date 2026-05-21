@@ -39,6 +39,45 @@ final class ScanExportServiceTests: XCTestCase {
         XCTAssertThrowsError(try service.makeExportBundle(from: []))
     }
 
+    func testMakeExportBundleUsesStructuredDocumentTextWhenAvailable() throws {
+        let service = ScanExportService()
+        let page = ScannedPage(
+            snapshot: DocumentSnapshot(
+                image: makeImage(size: CGSize(width: 120, height: 180)),
+                visualQuality: 0.82
+            ),
+            recognizedTextBlocks: [
+                RecognizedTextBlock(
+                    text: "Raw OCR fallback",
+                    confidence: 0.62,
+                    languageCode: "en",
+                    tileCoordinates: [TileCoordinate(column: 0, row: 0)]
+                )
+            ],
+            structuredDocument: StructuredDocument(
+                paragraphs: ["Structured paragraph"],
+                tables: [
+                    StructuredTable(rows: [["Name", "Amount"], ["Ari", "42"]])
+                ],
+                lists: [],
+                barcodes: []
+            )
+        )
+
+        let bundle = try service.makeExportBundle(from: [page])
+        defer {
+            bundle.cleanup()
+        }
+
+        let textURL = try XCTUnwrap(bundle.fileURLs.first { $0.pathExtension == "txt" })
+        let text = try String(contentsOf: textURL, encoding: .utf8)
+
+        XCTAssertTrue(text.contains("Structured paragraph"))
+        XCTAssertTrue(text.contains("Name\tAmount"))
+        XCTAssertTrue(text.contains("Ari\t42"))
+        XCTAssertFalse(text.contains("Raw OCR fallback"))
+    }
+
     private func makePage(text: String, size: CGSize) -> ScannedPage {
         ScannedPage(
             snapshot: DocumentSnapshot(
