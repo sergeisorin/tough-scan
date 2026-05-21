@@ -10,6 +10,8 @@ final class ScanFrameProcessor: CameraFrameConsumer {
     private let mapper: TileEvidenceMapper
     private let imageEnhancer: ImageEnhancer
     private let textRecognizer: TextRecognitionService
+    private let documentDetector: DocumentDetecting
+    private let perspectiveNormalizer: PerspectiveNormalizing
     private let minimumFrameInterval: TimeInterval
     private let processingQueue = DispatchQueue(label: "com.local.toughscan.scan-frame-processor")
     private let stateLock = NSLock()
@@ -18,6 +20,7 @@ final class ScanFrameProcessor: CameraFrameConsumer {
 
     private var isProcessing = false
     private var lastAcceptedFrameTime: TimeInterval = 0
+    private var geometryStabilizer: DocumentGeometryStabilizer
 
     init(
         gridWidth: Int,
@@ -25,12 +28,18 @@ final class ScanFrameProcessor: CameraFrameConsumer {
         framesPerSecond: Double = 3,
         imageEnhancer: ImageEnhancer = ImageEnhancer(),
         textRecognizer: TextRecognitionService = TextRecognitionService(),
+        documentDetector: DocumentDetecting = DocumentDetectionService(),
+        perspectiveNormalizer: PerspectiveNormalizing = PerspectiveNormalizer(),
+        geometryStabilizer: DocumentGeometryStabilizer = DocumentGeometryStabilizer(),
         onObservation: @escaping ObservationHandler,
         onError: ErrorHandler? = nil
     ) {
         self.mapper = TileEvidenceMapper(gridWidth: gridWidth, gridHeight: gridHeight)
         self.imageEnhancer = imageEnhancer
         self.textRecognizer = textRecognizer
+        self.documentDetector = documentDetector
+        self.perspectiveNormalizer = perspectiveNormalizer
+        self.geometryStabilizer = geometryStabilizer
         self.minimumFrameInterval = 1 / max(framesPerSecond, 1)
         self.onObservation = onObservation
         self.onError = onError
@@ -52,14 +61,6 @@ final class ScanFrameProcessor: CameraFrameConsumer {
             }
 
             let sourceImage = CIImage(cvPixelBuffer: pixelBuffer).oriented(.right)
-            let enhancedImage = self.imageEnhancer.enhance(sourceImage)
-
-            guard let cgImage = self.imageEnhancer.makeCGImage(from: enhancedImage) else {
-                self.finishProcessing()
-                return
-            }
-
-            let visualQuality = self.estimateVisualQuality(from: enhancedImage)
 
             Task { [weak self] in
                 guard let self else {
@@ -71,6 +72,33 @@ final class ScanFrameProcessor: CameraFrameConsumer {
                 }
 
                 do {
+                    let detectedGeometry = try await self.documentDetector.detectDocument(in: sourceImage)
+                    let stableGeometry = self.updateStableGeometry(with: detectedGeometry)
+
+                    guard let stableGeometry else {
+                        await self.onError?("Hold document edges in frame.")
+                        return
+                    }
+
+                    guard let normalizedImage = self.perspectiveNormalizer.normalize(
+                        sourceImage,
+                        quad: stableGeometry.quad
+                    ) else {
+                        await self.onError?("Hold steady while the document is flattened.")
+                        return
+                    }
+
+                    let enhancedImage = self.imageEnhancer.enhance(normalizedImage)
+
+                    guard let cgImage = self.imageEnhancer.makeCGImage(from: enhancedImage) else {
+                        await self.onError?("Could not prepare document image for OCR.")
+                        return
+                    }
+
+                    let visualQuality = self.estimateVisualQuality(
+                        from: enhancedImage,
+                        geometryConfidence: stableGeometry.confidence
+                    )
                     let regions = try await self.textRecognizer.recognizeTextRegions(in: cgImage)
                     let mapped = self.mapper.map(regions: regions, visualQuality: visualQuality)
 
@@ -114,10 +142,23 @@ final class ScanFrameProcessor: CameraFrameConsumer {
         stateLock.unlock()
     }
 
-    private func estimateVisualQuality(from image: CIImage) -> Double {
+    private func updateStableGeometry(with observation: DocumentGeometryObservation?) -> DocumentGeometryObservation? {
+        stateLock.lock()
+        defer {
+            stateLock.unlock()
+        }
+
+        return geometryStabilizer.update(with: observation)
+    }
+
+    private func estimateVisualQuality(
+        from image: CIImage,
+        geometryConfidence: Double
+    ) -> Double {
         let area = max(image.extent.width * image.extent.height, 1)
         let megapixels = area / 1_000_000
-        return min(0.85, max(0.55, megapixels / 3))
+        let imageQuality = min(0.85, max(0.55, megapixels / 3))
+        return min(max((imageQuality * 0.70) + (geometryConfidence * 0.30), 0), 1)
     }
 }
 

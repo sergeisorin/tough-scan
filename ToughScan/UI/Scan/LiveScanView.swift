@@ -75,7 +75,7 @@ struct LiveScanView: View {
                 gridHeight: session.confidenceMap.height,
                 onObservation: { observation in
                     session.addFrame(observation)
-                    liveScanMessage = "Live OCR updated \(observation.tileEvidence.count) region(s)."
+                    liveScanMessage = "Document flattened. Live OCR updated \(observation.tileEvidence.count) region(s)."
                 },
                 onError: { message in
                     liveScanMessage = message
@@ -84,6 +84,7 @@ struct LiveScanView: View {
         }
 
         cameraController.frameConsumer = frameProcessor
+        liveScanMessage = "Hold the full document in frame so all edges are visible."
         cameraController.configure()
         cameraController.start()
     }

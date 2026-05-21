@@ -12,6 +12,10 @@ struct ToughScanCoreChecks {
         testVisionRegionMapsToExpectedTile()
         testRegionSpanningTilesMapsToEveryTouchedTile()
         testMappingAggregatesTileEvidence()
+        testValidDocumentQuadIsAccepted()
+        testTinyDocumentQuadIsRejected()
+        testGeometryStabilizerSmoothsSmallMovement()
+        testGeometryStabilizerRejectsSuddenOutlier()
 
         print("ToughScanCoreChecks passed")
     }
@@ -196,9 +200,86 @@ private func testMappingAggregatesTileEvidence() {
     expect(evidence?.visualQuality == 0.75)
 }
 
+private func testValidDocumentQuadIsAccepted() {
+    let quad = DocumentQuad(
+        topLeft: NormalizedPoint(x: 0.12, y: 0.15),
+        topRight: NormalizedPoint(x: 0.88, y: 0.14),
+        bottomRight: NormalizedPoint(x: 0.90, y: 0.86),
+        bottomLeft: NormalizedPoint(x: 0.10, y: 0.88)
+    )
+
+    expect(quad.isValidDocumentShape)
+    expect(quad.area > 0.50)
+}
+
+private func testTinyDocumentQuadIsRejected() {
+    let quad = DocumentQuad(
+        topLeft: NormalizedPoint(x: 0.48, y: 0.48),
+        topRight: NormalizedPoint(x: 0.52, y: 0.48),
+        bottomRight: NormalizedPoint(x: 0.52, y: 0.52),
+        bottomLeft: NormalizedPoint(x: 0.48, y: 0.52)
+    )
+
+    expect(!quad.isValidDocumentShape)
+}
+
+private func testGeometryStabilizerSmoothsSmallMovement() {
+    var stabilizer = DocumentGeometryStabilizer(smoothingFactor: 0.50, maxCornerJump: 0.25)
+    let first = DocumentGeometryObservation(
+        quad: DocumentQuad.unit,
+        confidence: 0.90
+    )
+    let moved = DocumentGeometryObservation(
+        quad: DocumentQuad(
+            topLeft: NormalizedPoint(x: 0.04, y: 0.02),
+            topRight: NormalizedPoint(x: 0.96, y: 0.02),
+            bottomRight: NormalizedPoint(x: 0.96, y: 0.98),
+            bottomLeft: NormalizedPoint(x: 0.04, y: 0.98)
+        ),
+        confidence: 0.92
+    )
+
+    let initial = stabilizer.update(with: first)
+    let smoothed = stabilizer.update(with: moved)
+
+    expect(initial?.quad == DocumentQuad.unit)
+    expect(isClose(smoothed?.quad.topLeft.x, 0.02))
+    expect(isClose(smoothed?.quad.topLeft.y, 0.01))
+}
+
+private func testGeometryStabilizerRejectsSuddenOutlier() {
+    var stabilizer = DocumentGeometryStabilizer(smoothingFactor: 0.50, maxCornerJump: 0.10)
+    let first = DocumentGeometryObservation(
+        quad: DocumentQuad.unit,
+        confidence: 0.90
+    )
+    let outlier = DocumentGeometryObservation(
+        quad: DocumentQuad(
+            topLeft: NormalizedPoint(x: 0.70, y: 0.70),
+            topRight: NormalizedPoint(x: 0.98, y: 0.70),
+            bottomRight: NormalizedPoint(x: 0.98, y: 0.98),
+            bottomLeft: NormalizedPoint(x: 0.70, y: 0.98)
+        ),
+        confidence: 0.93
+    )
+
+    _ = stabilizer.update(with: first)
+    let stableAfterOutlier = stabilizer.update(with: outlier)
+
+    expect(stableAfterOutlier?.quad == DocumentQuad.unit)
+}
+
 private func expect(_ condition: @autoclosure () -> Bool, file: StaticString = #file, line: UInt = #line) {
     guard condition() else {
         fatalError("Check failed", file: file, line: line)
     }
+}
+
+private func isClose(_ value: Double?, _ expected: Double, tolerance: Double = 0.0001) -> Bool {
+    guard let value else {
+        return false
+    }
+
+    return abs(value - expected) <= tolerance
 }
 
