@@ -7,6 +7,8 @@ struct LiveScanView: View {
 
     @StateObject private var cameraController = CameraSessionController()
     @State private var hasCameraAccess = false
+    @State private var frameProcessor: ScanFrameProcessor?
+    @State private var liveScanMessage: String?
 
     var body: some View {
         VStack(spacing: 18) {
@@ -29,8 +31,16 @@ struct LiveScanView: View {
             ScanGuidancePanel(tile: session.guidanceSuggestion())
                 .padding(.horizontal, 16)
 
+            if let liveScanMessage {
+                Text(liveScanMessage)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
             HStack(spacing: 12) {
-                Button("Simulate stronger pass") {
+                Button("Debug stronger pass") {
                     addSimulatedFrame()
                 }
                 .buttonStyle(.bordered)
@@ -55,9 +65,25 @@ struct LiveScanView: View {
     private func prepareCamera() async {
         hasCameraAccess = await cameraController.requestAccess()
         guard hasCameraAccess else {
+            liveScanMessage = "Camera access is required for live scanning."
             return
         }
 
+        if frameProcessor == nil {
+            frameProcessor = ScanFrameProcessor(
+                gridWidth: session.confidenceMap.width,
+                gridHeight: session.confidenceMap.height,
+                onObservation: { observation in
+                    session.addFrame(observation)
+                    liveScanMessage = "Live OCR updated \(observation.tileEvidence.count) region(s)."
+                },
+                onError: { message in
+                    liveScanMessage = message
+                }
+            )
+        }
+
+        cameraController.frameConsumer = frameProcessor
         cameraController.configure()
         cameraController.start()
     }

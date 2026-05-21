@@ -1,0 +1,441 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		119BE043B6C8D232AED4F6EC /* ToughScanCore in Frameworks */ = {isa = PBXBuildFile; productRef = CC76BE126EA17E2305CA4442 /* ToughScanCore */; };
+		4DB430FE93822A676B8B08CC /* ScanFrameProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99AC13185ACE56799B528D7F /* ScanFrameProcessor.swift */; };
+		5E4EF76E9FE10CC31E4C0554 /* ConfidenceGridOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C145B6DE6173286F9BF2F107 /* ConfidenceGridOverlay.swift */; };
+		612A0AE6390D8C680EF95BA8 /* CameraSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 327D40757AA306AA44B59C7D /* CameraSessionController.swift */; };
+		6281A1A6349D8012E5487CC7 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0784D7BCE7E9B827A482442 /* RootView.swift */; };
+		9093CC2976516591AC0BBA89 /* TextRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA96750E73F93C6D18B4136 /* TextRecognitionService.swift */; };
+		9EAA8F52A9629D26C029A824 /* LiveScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887E7FD673C7E68C35AF5A0F /* LiveScanView.swift */; };
+		BE20CE101D9DF0DCD8B31A17 /* ImageEnhancer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C135D020D617896476EBE1D /* ImageEnhancer.swift */; };
+		C37EDDE0EA97A55BDB8FBE92 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DD210C6F1E08EAA4555FCFE /* CameraPreviewView.swift */; };
+		CA1E6CBA47370D0B07CB5592 /* ToughScanApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 225CE543C171F82E6E5634C3 /* ToughScanApp.swift */; };
+		DCBB5B83BB27626A0AC43E28 /* ConfidenceStateStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F8D59870DDBE52244D5CBE0 /* ConfidenceStateStyle.swift */; };
+		FD8D89EEA9734C917220A601 /* ScanReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAC81862EDA5A2DC5BDDB1BE /* ScanReviewView.swift */; };
+		FEBF74C90CDDD0409375420B /* ScanExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA34A48C82867A0735120BB /* ScanExportService.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		033A0F405BAED0AD130C9ABC /* ToughScan.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ToughScan.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0F8D59870DDBE52244D5CBE0 /* ConfidenceStateStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidenceStateStyle.swift; sourceTree = "<group>"; };
+		225CE543C171F82E6E5634C3 /* ToughScanApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToughScanApp.swift; sourceTree = "<group>"; };
+		327D40757AA306AA44B59C7D /* CameraSessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSessionController.swift; sourceTree = "<group>"; };
+		55F5A4AAE84221C72AACF760 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		5D9DF4ACE753A71C687C07F8 /* tough-scan */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "tough-scan"; path = .; sourceTree = SOURCE_ROOT; };
+		6DD210C6F1E08EAA4555FCFE /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
+		887E7FD673C7E68C35AF5A0F /* LiveScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveScanView.swift; sourceTree = "<group>"; };
+		8C135D020D617896476EBE1D /* ImageEnhancer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEnhancer.swift; sourceTree = "<group>"; };
+		99AC13185ACE56799B528D7F /* ScanFrameProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanFrameProcessor.swift; sourceTree = "<group>"; };
+		AAC81862EDA5A2DC5BDDB1BE /* ScanReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanReviewView.swift; sourceTree = "<group>"; };
+		BDA96750E73F93C6D18B4136 /* TextRecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextRecognitionService.swift; sourceTree = "<group>"; };
+		C145B6DE6173286F9BF2F107 /* ConfidenceGridOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidenceGridOverlay.swift; sourceTree = "<group>"; };
+		DEA34A48C82867A0735120BB /* ScanExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanExportService.swift; sourceTree = "<group>"; };
+		E0784D7BCE7E9B827A482442 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		6D78D0940A12B3FE50A61E08 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				119BE043B6C8D232AED4F6EC /* ToughScanCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		21FEAF1ADDFD42A7B88B4E4F = {
+			isa = PBXGroup;
+			children = (
+				719A793668B06BC6B136D2E2 /* Packages */,
+				4D921D8768C7523CC1B15C93 /* ToughScan */,
+				86C7E93528C74E2C8E110FBC /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		251F2899A1D5A317B73D4380 /* Processing */ = {
+			isa = PBXGroup;
+			children = (
+				8C135D020D617896476EBE1D /* ImageEnhancer.swift */,
+				99AC13185ACE56799B528D7F /* ScanFrameProcessor.swift */,
+				BDA96750E73F93C6D18B4136 /* TextRecognitionService.swift */,
+			);
+			path = Processing;
+			sourceTree = "<group>";
+		};
+		3A931500F5BC24E7D95E6D90 /* Camera */ = {
+			isa = PBXGroup;
+			children = (
+				6DD210C6F1E08EAA4555FCFE /* CameraPreviewView.swift */,
+				327D40757AA306AA44B59C7D /* CameraSessionController.swift */,
+			);
+			path = Camera;
+			sourceTree = "<group>";
+		};
+		44457DE5F26B9959B2DF125B /* Review */ = {
+			isa = PBXGroup;
+			children = (
+				AAC81862EDA5A2DC5BDDB1BE /* ScanReviewView.swift */,
+			);
+			path = Review;
+			sourceTree = "<group>";
+		};
+		4D921D8768C7523CC1B15C93 /* ToughScan */ = {
+			isa = PBXGroup;
+			children = (
+				55F5A4AAE84221C72AACF760 /* Info.plist */,
+				F9FCC514BB8FC1656DA53503 /* App */,
+				3A931500F5BC24E7D95E6D90 /* Camera */,
+				90A5204393F05456F600CD5A /* Export */,
+				251F2899A1D5A317B73D4380 /* Processing */,
+				D78127A970E549CDB8936DFF /* UI */,
+			);
+			path = ToughScan;
+			sourceTree = "<group>";
+		};
+		5F8EF8DF2136340F25626481 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				0F8D59870DDBE52244D5CBE0 /* ConfidenceStateStyle.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		719A793668B06BC6B136D2E2 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				5D9DF4ACE753A71C687C07F8 /* tough-scan */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		782E1716DBE759ADACE620BA /* Scan */ = {
+			isa = PBXGroup;
+			children = (
+				C145B6DE6173286F9BF2F107 /* ConfidenceGridOverlay.swift */,
+				887E7FD673C7E68C35AF5A0F /* LiveScanView.swift */,
+			);
+			path = Scan;
+			sourceTree = "<group>";
+		};
+		86C7E93528C74E2C8E110FBC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				033A0F405BAED0AD130C9ABC /* ToughScan.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		90A5204393F05456F600CD5A /* Export */ = {
+			isa = PBXGroup;
+			children = (
+				DEA34A48C82867A0735120BB /* ScanExportService.swift */,
+			);
+			path = Export;
+			sourceTree = "<group>";
+		};
+		D78127A970E549CDB8936DFF /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				E0784D7BCE7E9B827A482442 /* RootView.swift */,
+				44457DE5F26B9959B2DF125B /* Review */,
+				782E1716DBE759ADACE620BA /* Scan */,
+				5F8EF8DF2136340F25626481 /* Shared */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		F9FCC514BB8FC1656DA53503 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				225CE543C171F82E6E5634C3 /* ToughScanApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		68D7A4359E61A7F5372D1610 /* ToughScan */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E08348F9E0F370DBEF653C00 /* Build configuration list for PBXNativeTarget "ToughScan" */;
+			buildPhases = (
+				9B1A812B0FA3E75E0681DAAA /* Sources */,
+				6D78D0940A12B3FE50A61E08 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ToughScan;
+			packageProductDependencies = (
+				CC76BE126EA17E2305CA4442 /* ToughScanCore */,
+			);
+			productName = ToughScan;
+			productReference = 033A0F405BAED0AD130C9ABC /* ToughScan.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BC62BF986F7A3218CA87E937 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 602B2B34BC0F04A7334538C0 /* Build configuration list for PBXProject "ToughScan" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 21FEAF1ADDFD42A7B88B4E4F;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				5FAE609EF9EE655724BEFA7D /* XCLocalSwiftPackageReference "." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 86C7E93528C74E2C8E110FBC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				68D7A4359E61A7F5372D1610 /* ToughScan */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9B1A812B0FA3E75E0681DAAA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C37EDDE0EA97A55BDB8FBE92 /* CameraPreviewView.swift in Sources */,
+				612A0AE6390D8C680EF95BA8 /* CameraSessionController.swift in Sources */,
+				5E4EF76E9FE10CC31E4C0554 /* ConfidenceGridOverlay.swift in Sources */,
+				DCBB5B83BB27626A0AC43E28 /* ConfidenceStateStyle.swift in Sources */,
+				BE20CE101D9DF0DCD8B31A17 /* ImageEnhancer.swift in Sources */,
+				9EAA8F52A9629D26C029A824 /* LiveScanView.swift in Sources */,
+				6281A1A6349D8012E5487CC7 /* RootView.swift in Sources */,
+				FEBF74C90CDDD0409375420B /* ScanExportService.swift in Sources */,
+				4DB430FE93822A676B8B08CC /* ScanFrameProcessor.swift in Sources */,
+				FD8D89EEA9734C917220A601 /* ScanReviewView.swift in Sources */,
+				9093CC2976516591AC0BBA89 /* TextRecognitionService.swift in Sources */,
+				CA1E6CBA47370D0B07CB5592 /* ToughScanApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		17D219B342B48072DC4519BB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		63A074D41179890F6B1E7989 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		84CE9DFF6C13946563A39629 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = ToughScan/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Tough Scan uses the camera to progressively recover hard-to-read text documents. Processing stays on this iPhone.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Tough Scan can save exported scans only when you choose to export them.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.toughscan;
+				PRODUCT_NAME = "Tough Scan";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.1;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		9F16ED7B1DA4F31BB54DC27A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = ToughScan/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Tough Scan uses the camera to progressively recover hard-to-read text documents. Processing stays on this iPhone.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Tough Scan can save exported scans only when you choose to export them.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.toughscan;
+				PRODUCT_NAME = "Tough Scan";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.1;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		602B2B34BC0F04A7334538C0 /* Build configuration list for PBXProject "ToughScan" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				63A074D41179890F6B1E7989 /* Debug */,
+				17D219B342B48072DC4519BB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E08348F9E0F370DBEF653C00 /* Build configuration list for PBXNativeTarget "ToughScan" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84CE9DFF6C13946563A39629 /* Debug */,
+				9F16ED7B1DA4F31BB54DC27A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		5FAE609EF9EE655724BEFA7D /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CC76BE126EA17E2305CA4442 /* ToughScanCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ToughScanCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = BC62BF986F7A3218CA87E937 /* Project object */;
+}

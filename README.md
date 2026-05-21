@@ -35,3 +35,14 @@ open ToughScan.xcodeproj
 
 If XcodeGen is already installed, only the last two commands are needed.
 
+## Manual iPhone Validation
+
+Use a real iPhone for camera validation; the simulator cannot prove the live scan pipeline.
+
+1. Run the app on iPhone 15 Pro.
+2. Start a scan and point at printed English text.
+3. Confirm the confidence grid updates without using the debug stronger-pass button.
+4. Repeat with printed Hebrew text.
+5. Try lower light or faded text and confirm weak regions remain marked for rescan.
+6. Confirm no raw OCR text appears in debug logs.
+
