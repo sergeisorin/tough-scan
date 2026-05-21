@@ -1,5 +1,6 @@
 import SwiftUI
 import ToughScanCore
+import UIKit
 
 struct LiveScanView: View {
     @Binding var session: ProgressiveScanSession
@@ -54,6 +55,7 @@ struct LiveScanView: View {
 
                 Button("Review scan", action: onReview)
                     .buttonStyle(.borderedProminent)
+                    .disabled(bestSnapshot == nil)
             }
             .controlSize(.large)
             .padding(.horizontal, 16)
@@ -125,6 +127,26 @@ struct LiveScanView: View {
                 ]
             )
         )
+
+        if bestSnapshot == nil {
+            bestSnapshot = DocumentSnapshot(
+                image: makeSimulatedDocumentImage(),
+                visualQuality: 0.84
+            )
+            latestSnapshot = bestSnapshot
+        }
+    }
+
+    private func makeSimulatedDocumentImage() -> UIImage {
+        let size = CGSize(width: 720, height: 960)
+        return UIGraphicsImageRenderer(size: size).image { context in
+            UIColor.systemBackground.setFill()
+            context.fill(CGRect(origin: .zero, size: size))
+            UIColor.label.setFill()
+            context.fill(CGRect(x: 72, y: 120, width: 460, height: 8))
+            context.fill(CGRect(x: 72, y: 168, width: 580, height: 8))
+            context.fill(CGRect(x: 72, y: 216, width: 520, height: 8))
+        }
     }
 }
 

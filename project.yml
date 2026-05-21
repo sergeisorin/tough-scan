@@ -30,4 +30,32 @@ targets:
         CFBundleDisplayName: Tough Scan
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
+  ToughScanTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - ToughScanTests
+      - ToughScan/Export/ScanExportBundle.swift
+      - ToughScan/Export/ScanExportService.swift
+      - ToughScan/Processing/DocumentSnapshot.swift
+      - ToughScan/Processing/ScannedPage.swift
+    dependencies:
+      - package: ToughScanPackage
+        product: ToughScanCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.local.toughscan.tests
+        SWIFT_VERSION: 5.10
+        TEST_HOST: ""
+        BUNDLE_LOADER: ""
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  ToughScan:
+    build:
+      targets:
+        ToughScan: all
+        ToughScanTests: [test]
+    test:
+      targets:
+        - ToughScanTests
 
