@@ -11,12 +11,6 @@ This repository is in MVP scaffolding. The first implementation focuses on:
 - AVFoundation/Vision-ready service boundaries.
 - Calm, clinical review and rescan UI.
 
-## Context
-
-- [Requirements](REQUIREMENTS.md)
-- [Architecture](ARCHITECTURE.md)
-- [Memory](MEMORY.md)
-
 ## Development
 
 The core scan logic is available as a Swift package so it can be checked without launching the iOS app:
