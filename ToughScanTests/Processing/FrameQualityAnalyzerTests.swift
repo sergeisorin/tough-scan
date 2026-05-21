@@ -79,6 +79,31 @@ final class FrameQualityAnalyzerTests: XCTestCase {
         XCTAssertGreaterThan(crispMetrics.captureScore, blurredMetrics.captureScore)
     }
 
+    func testLensSmudgeConfidencePenalizesCaptureScore() {
+        let clean = FrameQualityMetrics(
+            brightness: 0.62,
+            contrast: 0.7,
+            sharpness: 0.7,
+            glareRisk: 0.02,
+            documentCoverage: 0.8,
+            geometryConfidence: 0.9,
+            lensSmudgeConfidence: 0.05
+        )
+        let smudged = FrameQualityMetrics(
+            brightness: 0.62,
+            contrast: 0.7,
+            sharpness: 0.7,
+            glareRisk: 0.02,
+            documentCoverage: 0.8,
+            geometryConfidence: 0.9,
+            lensSmudgeConfidence: 0.92
+        )
+
+        XCTAssertFalse(clean.isLikelySmudged)
+        XCTAssertTrue(smudged.isLikelySmudged)
+        XCTAssertLessThan(smudged.captureScore, clean.captureScore)
+    }
+
     private func makeSolidImage(white: CGFloat) -> CIImage {
         let color = UIColor(white: white, alpha: 1)
         return UIGraphicsImageRenderer(size: CGSize(width: 96, height: 96)).image { context in

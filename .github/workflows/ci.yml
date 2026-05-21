@@ -34,3 +34,6 @@ jobs:
 
       - name: Build iOS app
         run: xcodebuild -project ToughScan.xcodeproj -scheme ToughScan -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+
+      - name: Run iOS unit tests
+        run: xcodebuild test -project ToughScan.xcodeproj -scheme ToughScan -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' CODE_SIGNING_ALLOWED=NO

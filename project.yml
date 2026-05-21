@@ -2,7 +2,7 @@ name: ToughScan
 options:
   minimumXcodeGenVersion: 2.42.0
   deploymentTarget:
-    iOS: "17.0"
+    iOS: "26.0"
 packages:
   ToughScanPackage:
     path: .
@@ -39,12 +39,16 @@ targets:
       - ToughScan/Export/ScanExportService.swift
       - ToughScan/Camera/CameraControlState.swift
       - ToughScan/Camera/ScanAutomationController.swift
+      - ToughScan/Processing/DocumentDetectionGeometryMapper.swift
       - ToughScan/Processing/DocumentSnapshot.swift
       - ToughScan/Processing/FrameQualityAnalyzer.swift
       - ToughScan/Processing/FrameQualityMetrics.swift
       - ToughScan/Processing/ImageEnhancer.swift
+      - ToughScan/Processing/LensSmudgeDetector.swift
       - ToughScan/Processing/ReviewPageSet.swift
+      - ToughScan/Processing/ScanMessageCoordinator.swift
       - ToughScan/Processing/ScannedPage.swift
+      - ToughScan/Processing/StructuredDocument.swift
     dependencies:
       - package: ToughScanPackage
         product: ToughScanCore

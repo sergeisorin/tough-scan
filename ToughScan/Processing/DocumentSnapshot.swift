@@ -3,6 +3,7 @@ import UIKit
 struct DocumentSnapshot: Identifiable {
     let id: UUID
     let image: UIImage
+    let previewImage: UIImage
     let visualQuality: Double
     let captureScore: Double
     let averageOCRConfidence: Double
@@ -19,7 +20,8 @@ struct DocumentSnapshot: Identifiable {
         createdAt: Date = Date()
     ) {
         self.id = id
-        self.image = image.downscaledForDocumentPreview()
+        self.image = image
+        self.previewImage = image.downscaledForDocumentPreview()
         self.visualQuality = min(max(visualQuality, 0), 1)
         self.captureScore = min(max(captureScore ?? visualQuality, 0), 1)
         self.averageOCRConfidence = min(max(averageOCRConfidence, 0), 1)

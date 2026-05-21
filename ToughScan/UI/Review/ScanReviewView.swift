@@ -5,14 +5,17 @@ struct ScanReviewView: View {
     let session: ProgressiveScanSession
     let snapshot: DocumentSnapshot?
     let capturedPages: [ScannedPage]
-    let onAddPage: () -> Void
+    let onAddPage: (StructuredDocument?) -> Void
     let onRemoveCapturedPage: (ScannedPage.ID) -> Void
     let onRescan: () -> Void
 
     @State private var activeExportBundle: ScanExportBundle?
     @State private var exportErrorMessage: String?
+    @State private var structuredDocument: StructuredDocument?
+    @State private var structuredRecognitionMessage: String?
 
     private let exportService = ScanExportService()
+    private let structuredRecognitionService = StructuredDocumentRecognitionService()
 
     var body: some View {
         ScrollView {
@@ -33,7 +36,25 @@ struct ScanReviewView: View {
 
                 ConfidenceLegend()
 
+                if let snapshot {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Selectable image text")
+                            .font(.headline)
+                        Text("Use Live Text here to select, copy, translate, or open detected data from the reconstructed page.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        LiveTextImageView(image: snapshot.image)
+                            .frame(height: 260)
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                }
+
                 RecognizedTextPanel(blocks: session.recognizedTextBlocks)
+
+                StructuredDocumentPanel(
+                    document: structuredDocument,
+                    message: structuredRecognitionMessage
+                )
 
                 PageSetPanel(
                     pageSet: pageSet,
@@ -50,7 +71,9 @@ struct ScanReviewView: View {
                     Button("Rescan weak areas", action: onRescan)
                         .buttonStyle(.bordered)
 
-                    Button("Add another page", action: onAddPage)
+                    Button("Add another page") {
+                        onAddPage(structuredDocument)
+                    }
                         .buttonStyle(.bordered)
                         .disabled(snapshot == nil)
 
@@ -70,6 +93,9 @@ struct ScanReviewView: View {
                 activeExportBundle = nil
             }
         }
+        .task(id: snapshot?.id) {
+            await recognizeStructuredDocument()
+        }
     }
 
     private var currentPage: ScannedPage? {
@@ -79,7 +105,8 @@ struct ScanReviewView: View {
 
         return ScannedPage(
             snapshot: snapshot,
-            recognizedTextBlocks: session.recognizedTextBlocks
+            recognizedTextBlocks: session.recognizedTextBlocks,
+            structuredDocument: structuredDocument
         )
     }
 
@@ -98,6 +125,77 @@ struct ScanReviewView: View {
         } catch {
             exportErrorMessage = "Could not prepare the local export. Try rescanning the page."
         }
+    }
+
+    @MainActor
+    private func recognizeStructuredDocument() async {
+        guard let snapshot else {
+            structuredDocument = nil
+            structuredRecognitionMessage = nil
+            return
+        }
+
+        structuredRecognitionMessage = "Analyzing document structure locally."
+
+        do {
+            structuredDocument = try await structuredRecognitionService.recognizeDocument(in: snapshot.image)
+            structuredRecognitionMessage = nil
+        } catch {
+            structuredDocument = nil
+            structuredRecognitionMessage = "Structured document analysis is unavailable for this scan."
+        }
+    }
+}
+
+private struct StructuredDocumentPanel: View {
+    let document: StructuredDocument?
+    let message: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Document structure")
+                .font(.headline)
+
+            if let document {
+                if document.exportText.isEmpty {
+                    Text("No structured paragraphs, tables, lists, or barcodes were detected.")
+                        .foregroundStyle(.secondary)
+                } else {
+                    if !document.paragraphs.isEmpty {
+                        Text("\(document.paragraphs.count) paragraph groups detected")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    ForEach(Array(document.tables.enumerated()), id: \.offset) { index, table in
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Table \(index + 1)")
+                                .font(.subheadline.weight(.semibold))
+                            Text(table.tsvText)
+                                .font(.caption.monospaced())
+                                .textSelection(.enabled)
+                        }
+                    }
+
+                    if !document.lists.isEmpty {
+                        Text("\(document.lists.count) lists detected")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    if !document.barcodes.isEmpty {
+                        Text("Barcodes: \(document.barcodes.joined(separator: ", "))")
+                            .font(.caption)
+                            .textSelection(.enabled)
+                    }
+                }
+            } else {
+                Text(message ?? "Document structure will appear after the page is analyzed.")
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 }
 

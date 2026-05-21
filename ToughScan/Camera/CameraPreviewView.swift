@@ -5,6 +5,7 @@ import UIKit
 struct CameraPreviewView: UIViewRepresentable {
     let session: AVCaptureSession
     var onTapDevicePoint: ((CGPoint) -> Void)? = nil
+    var automationFocusRequest: CameraFocusRequest? = nil
 
     func makeUIView(context: Context) -> PreviewView {
         let view = PreviewView()
@@ -25,6 +26,7 @@ struct CameraPreviewView: UIViewRepresentable {
         uiView.videoPreviewLayer.session = session
         context.coordinator.onTapDevicePoint = onTapDevicePoint
         context.coordinator.previewView = uiView
+        context.coordinator.handleAutomationFocusRequest(automationFocusRequest)
     }
 
     func makeCoordinator() -> Coordinator {
@@ -34,6 +36,7 @@ struct CameraPreviewView: UIViewRepresentable {
     final class Coordinator: NSObject {
         var onTapDevicePoint: ((CGPoint) -> Void)?
         weak var previewView: PreviewView?
+        private var handledAutomationFocusRequestID: UUID?
 
         init(onTapDevicePoint: ((CGPoint) -> Void)?) {
             self.onTapDevicePoint = onTapDevicePoint
@@ -48,6 +51,41 @@ struct CameraPreviewView: UIViewRepresentable {
             let devicePoint = previewView.videoPreviewLayer.captureDevicePointConverted(fromLayerPoint: layerPoint)
             onTapDevicePoint?(devicePoint)
         }
+
+        func handleAutomationFocusRequest(_ request: CameraFocusRequest?) {
+            guard let request,
+                  handledAutomationFocusRequestID != request.id,
+                  let previewView,
+                  previewView.bounds.width > 0,
+                  previewView.bounds.height > 0 else {
+                return
+            }
+
+            let layerPoint = CGPoint(
+                x: request.normalizedPreviewPoint.x * previewView.bounds.width,
+                y: request.normalizedPreviewPoint.y * previewView.bounds.height
+            )
+            let devicePoint = previewView.videoPreviewLayer.captureDevicePointConverted(fromLayerPoint: layerPoint)
+
+            handledAutomationFocusRequestID = request.id
+            onTapDevicePoint?(devicePoint)
+        }
+    }
+}
+
+struct CameraFocusRequest: Equatable {
+    let id: UUID
+    let normalizedPreviewPoint: CGPoint
+
+    init(
+        id: UUID = UUID(),
+        normalizedPreviewPoint: CGPoint
+    ) {
+        self.id = id
+        self.normalizedPreviewPoint = CGPoint(
+            x: min(max(normalizedPreviewPoint.x, 0), 1),
+            y: min(max(normalizedPreviewPoint.y, 0), 1)
+        )
     }
 }
 
