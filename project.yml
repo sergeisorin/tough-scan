@@ -37,6 +37,7 @@ targets:
       - ToughScanTests
       - ToughScan/Export/ScanExportBundle.swift
       - ToughScan/Export/ScanExportService.swift
+      - ToughScan/Camera/CameraControlState.swift
       - ToughScan/Processing/DocumentSnapshot.swift
       - ToughScan/Processing/ScannedPage.swift
     dependencies:

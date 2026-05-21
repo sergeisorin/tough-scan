@@ -30,7 +30,9 @@ struct NormalizedDocumentPreviewView: View {
                                 .accessibilityLabel("Confidence overlay aligned to flattened document")
                         }
 
-                        TextLineConfidenceOverlay(blocks: recognizedTextBlocks)
+                        if showsOverlay {
+                            TextLineConfidenceOverlay(blocks: recognizedTextBlocks)
+                        }
                     }
                     .aspectRatio(
                         snapshot.image.size.width / max(snapshot.image.size.height, 1),
