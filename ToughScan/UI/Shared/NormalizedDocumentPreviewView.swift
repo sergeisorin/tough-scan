@@ -16,7 +16,7 @@ struct NormalizedDocumentPreviewView: View {
             if let snapshot {
                 GeometryReader { proxy in
                     ZStack {
-                        Image(uiImage: snapshot.image)
+                        Image(uiImage: snapshot.previewImage)
                             .resizable()
                             .scaledToFill()
                             .accessibilityLabel("Flattened document preview")
@@ -30,7 +30,7 @@ struct NormalizedDocumentPreviewView: View {
                         }
                     }
                     .aspectRatio(
-                        snapshot.image.size.width / max(snapshot.image.size.height, 1),
+                        snapshot.previewImage.size.width / max(snapshot.previewImage.size.height, 1),
                         contentMode: .fit
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))

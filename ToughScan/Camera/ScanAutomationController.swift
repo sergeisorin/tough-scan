@@ -47,7 +47,12 @@ struct ScanAutomationController {
 
         let decision: ScanAutomationDecision
 
-        if metrics.sharpness < 0.18, metrics.geometryConfidence > 0.65 {
+        if metrics.isLikelySmudged, metrics.geometryConfidence > 0.65 {
+            decision = ScanAutomationDecision(
+                command: .showGuidance("Camera lens may be smudged. Clean the lens and try another pass."),
+                message: "Camera lens may be smudged. Clean the lens and try another pass."
+            )
+        } else if metrics.sharpness < 0.18, metrics.geometryConfidence > 0.65 {
             decision = ScanAutomationDecision(
                 command: .showGuidance("Hold still so the text sharpens."),
                 message: "Hold still so the text sharpens."

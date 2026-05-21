@@ -13,6 +13,7 @@ final class ScanFrameProcessor: CameraFrameConsumer {
     private let mapper: TileEvidenceMapper
     private let imageEnhancer: ImageEnhancer
     private let frameQualityAnalyzer: FrameQualityAnalyzing
+    private let lensSmudgeDetector: LensSmudgeDetecting
     private let textRecognizer: TextRecognitionService
     private let documentDetector: DocumentDetecting
     private let perspectiveNormalizer: PerspectiveNormalizing
@@ -34,6 +35,7 @@ final class ScanFrameProcessor: CameraFrameConsumer {
         framesPerSecond: Double = 3,
         imageEnhancer: ImageEnhancer = ImageEnhancer(),
         frameQualityAnalyzer: FrameQualityAnalyzing = FrameQualityAnalyzer(),
+        lensSmudgeDetector: LensSmudgeDetecting = DefaultLensSmudgeDetector(),
         textRecognizer: TextRecognitionService = TextRecognitionService(),
         documentDetector: DocumentDetecting = DocumentDetectionService(),
         perspectiveNormalizer: PerspectiveNormalizing = PerspectiveNormalizer(),
@@ -46,6 +48,7 @@ final class ScanFrameProcessor: CameraFrameConsumer {
         self.mapper = TileEvidenceMapper(gridWidth: gridWidth, gridHeight: gridHeight)
         self.imageEnhancer = imageEnhancer
         self.frameQualityAnalyzer = frameQualityAnalyzer
+        self.lensSmudgeDetector = lensSmudgeDetector
         self.textRecognizer = textRecognizer
         self.documentDetector = documentDetector
         self.perspectiveNormalizer = perspectiveNormalizer
@@ -100,11 +103,16 @@ final class ScanFrameProcessor: CameraFrameConsumer {
                         return
                     }
 
-                    let qualityMetrics = self.frameQualityAnalyzer.analyze(
+                    var qualityMetrics = self.frameQualityAnalyzer.analyze(
                         normalizedImage,
                         geometryConfidence: stableGeometry.confidence,
                         documentCoverage: stableGeometry.quad.area
                     )
+
+                    if let smudgeConfidence = await self.lensSmudgeDetector.smudgeConfidence(in: normalizedImage) {
+                        qualityMetrics = qualityMetrics.withLensSmudgeConfidence(smudgeConfidence)
+                    }
+
                     await self.onFrameQuality?(qualityMetrics)
 
                     let enhancedImage = self.imageEnhancer.enhance(normalizedImage, metrics: qualityMetrics)

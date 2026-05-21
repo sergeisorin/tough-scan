@@ -82,6 +82,26 @@ final class ScanAutomationControllerTests: XCTestCase {
         XCTAssertEqual(decision.command, .showGuidance("Hold still so the text sharpens."))
     }
 
+    func testLensSmudgeGuidanceWinsOverCameraChangesWhenGeometryIsStable() {
+        var controller = ScanAutomationController()
+        let decision = controller.nextDecision(
+            metrics: makeMetrics(
+                brightness: 0.22,
+                sharpness: 0.7,
+                glareRisk: 0.02,
+                lensSmudgeConfidence: 0.94
+            ),
+            guidance: ScanGuidance(action: .holdSteady, targetTile: nil, readyForReview: false),
+            cameraState: CameraControlState(torchEnabled: false),
+            now: Date(timeIntervalSince1970: 100)
+        )
+
+        XCTAssertEqual(
+            decision.command,
+            .showGuidance("Camera lens may be smudged. Clean the lens and try another pass.")
+        )
+    }
+
     func testSmallStableDocumentCanZoomForWeakText() {
         var controller = ScanAutomationController()
         let targetTile = ScanTile(
@@ -113,7 +133,8 @@ final class ScanAutomationControllerTests: XCTestCase {
         sharpness: Double = 0.7,
         glareRisk: Double,
         documentCoverage: Double = 0.7,
-        geometryConfidence: Double = 0.9
+        geometryConfidence: Double = 0.9,
+        lensSmudgeConfidence: Double = 0
     ) -> FrameQualityMetrics {
         FrameQualityMetrics(
             brightness: brightness,
@@ -121,7 +142,8 @@ final class ScanAutomationControllerTests: XCTestCase {
             sharpness: sharpness,
             glareRisk: glareRisk,
             documentCoverage: documentCoverage,
-            geometryConfidence: geometryConfidence
+            geometryConfidence: geometryConfidence,
+            lensSmudgeConfidence: lensSmudgeConfidence
         )
     }
 }

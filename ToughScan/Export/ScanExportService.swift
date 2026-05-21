@@ -89,7 +89,7 @@ final class ScanExportService: ScanExporting {
     private func makeTextFile(from pages: [ScannedPage]) -> Data {
         let text = pages.enumerated()
             .map { index, page in
-                let body = page.recognizedTextBlocks
+                let body = page.structuredDocument?.exportText ?? page.recognizedTextBlocks
                     .map(\.text)
                     .joined(separator: "\n")
 
