@@ -2,7 +2,7 @@ name: ToughScan
 options:
   minimumXcodeGenVersion: 2.42.0
   deploymentTarget:
-    iOS: "26.0"
+    iOS: "17.0"
 packages:
   ToughScanPackage:
     path: .
