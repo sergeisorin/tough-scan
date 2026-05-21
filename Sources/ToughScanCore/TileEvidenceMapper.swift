@@ -69,7 +69,11 @@ public struct TileEvidenceMapper: Sendable {
         regions: [NormalizedTextRegion],
         visualQuality: Double
     ) -> TileEvidenceMappingResult {
-        var evidenceByCoordinate: [TileCoordinate: TileAccumulator] = [:]
+        var evidenceByCoordinate = Dictionary(
+            uniqueKeysWithValues: allTileCoordinates().map { coordinate in
+                (coordinate, TileAccumulator())
+            }
+        )
         var blocks: [RecognizedTextBlock] = []
 
         for region in regions where !region.text.isEmpty && region.boundingBox.area > 0 {

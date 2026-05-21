@@ -3,6 +3,7 @@ import ToughScanCore
 
 struct ConfidenceGridOverlay: View {
     let map: TileConfidenceMap
+    var targetCoordinate: TileCoordinate? = nil
 
     var body: some View {
         GeometryReader { proxy in
@@ -11,7 +12,10 @@ struct ConfidenceGridOverlay: View {
 
             ZStack(alignment: .topLeading) {
                 ForEach(map.tiles, id: \.coordinate) { tile in
-                    ConfidenceTileView(tile: tile)
+                    ConfidenceTileView(
+                        tile: tile,
+                        isTargeted: tile.coordinate == targetCoordinate
+                    )
                         .frame(width: tileWidth, height: tileHeight)
                         .position(
                             x: (CGFloat(tile.coordinate.column) * tileWidth) + (tileWidth / 2),
@@ -26,6 +30,7 @@ struct ConfidenceGridOverlay: View {
 
 private struct ConfidenceTileView: View {
     let tile: ScanTile
+    let isTargeted: Bool
 
     private var style: ConfidenceStateStyle {
         ConfidenceStateStyle.style(for: tile.state)
@@ -37,7 +42,7 @@ private struct ConfidenceTileView: View {
                 .fill(style.color.opacity(opacity))
                 .overlay(
                     Rectangle()
-                        .stroke(style.color.opacity(0.55), lineWidth: borderWidth)
+                        .stroke(style.color.opacity(borderOpacity), lineWidth: borderWidth)
                 )
 
             if tile.state != .successful {
@@ -47,7 +52,7 @@ private struct ConfidenceTileView: View {
                     .accessibilityHidden(true)
             }
         }
-        .accessibilityLabel("\(style.title) scan region")
+        .accessibilityLabel("\(accessibilityPrefix)\(style.title) scan region")
         .accessibilityValue("Confidence \(Int(tile.combinedConfidence * 100)) percent")
     }
 
@@ -65,7 +70,19 @@ private struct ConfidenceTileView: View {
     }
 
     private var borderWidth: CGFloat {
-        tile.state == .needsScan ? 1.5 : 1
+        if isTargeted {
+            return 3
+        }
+
+        return tile.state == .needsScan ? 1.5 : 1
+    }
+
+    private var borderOpacity: Double {
+        isTargeted ? 0.95 : 0.55
+    }
+
+    private var accessibilityPrefix: String {
+        isTargeted ? "Target region, " : ""
     }
 }
 
