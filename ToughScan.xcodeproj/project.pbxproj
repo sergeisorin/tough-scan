@@ -21,6 +21,7 @@
 		9881609C2A09EC657C826B9A /* ShareSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8580ECFBCC79BDA06ECB5AF2 /* ShareSheetView.swift */; };
 		9EAA8F52A9629D26C029A824 /* LiveScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887E7FD673C7E68C35AF5A0F /* LiveScanView.swift */; };
 		A937D6F22D1A4E647CBEE137 /* NormalizedDocumentPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF35FED8AAB8B6B2DC4BBABC /* NormalizedDocumentPreviewView.swift */; };
+		B379EE00D1FA4B5AD869412F /* TextLineConfidenceOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01D31F4400BCD1EAEF072AF6 /* TextLineConfidenceOverlay.swift */; };
 		BE20CE101D9DF0DCD8B31A17 /* ImageEnhancer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C135D020D617896476EBE1D /* ImageEnhancer.swift */; };
 		C006D5BE919E1E2747B19F5F /* ScanExportBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A511DED11126783F6C195158 /* ScanExportBundle.swift */; };
 		C0D0230273F1FB0B32FCB98C /* ScanExportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38D150155C8B36832194E9BD /* ScanExportServiceTests.swift */; };
@@ -36,6 +37,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		01D31F4400BCD1EAEF072AF6 /* TextLineConfidenceOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextLineConfidenceOverlay.swift; sourceTree = "<group>"; };
 		033A0F405BAED0AD130C9ABC /* ToughScan.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ToughScan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C9E1C269267EBF7292F456B /* PerspectiveNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerspectiveNormalizer.swift; sourceTree = "<group>"; };
 		0F8D59870DDBE52244D5CBE0 /* ConfidenceStateStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidenceStateStyle.swift; sourceTree = "<group>"; };
@@ -119,6 +121,7 @@
 			isa = PBXGroup;
 			children = (
 				AAC81862EDA5A2DC5BDDB1BE /* ScanReviewView.swift */,
+				01D31F4400BCD1EAEF072AF6 /* TextLineConfidenceOverlay.swift */,
 			);
 			path = Review;
 			sourceTree = "<group>";
@@ -313,6 +316,7 @@
 				FD8D89EEA9734C917220A601 /* ScanReviewView.swift in Sources */,
 				8EF7DA9581DDB66B9B71A56E /* ScannedPage.swift in Sources */,
 				9881609C2A09EC657C826B9A /* ShareSheetView.swift in Sources */,
+				B379EE00D1FA4B5AD869412F /* TextLineConfidenceOverlay.swift in Sources */,
 				9093CC2976516591AC0BBA89 /* TextRecognitionService.swift in Sources */,
 				CA1E6CBA47370D0B07CB5592 /* ToughScanApp.swift in Sources */,
 			);
