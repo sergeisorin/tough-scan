@@ -12,9 +12,33 @@ protocol ScanExporting {
     ) throws -> ScanExportBundle
 }
 
+protocol ExportDataWriting {
+    func write(_ data: Data, to url: URL) throws
+}
+
+struct AtomicExportDataWriter: ExportDataWriting {
+    func write(_ data: Data, to url: URL) throws {
+        try data.write(to: url, options: .atomic)
+    }
+}
+
 final class ScanExportService: ScanExporting {
     enum ExportError: Error {
         case noPages
+    }
+
+    private let temporaryDirectory: URL
+    private let fileManager: FileManager
+    private let dataWriter: ExportDataWriting
+
+    init(
+        temporaryDirectory: URL = FileManager.default.temporaryDirectory,
+        fileManager: FileManager = .default,
+        dataWriter: ExportDataWriting = AtomicExportDataWriter()
+    ) {
+        self.temporaryDirectory = temporaryDirectory
+        self.fileManager = fileManager
+        self.dataWriter = dataWriter
     }
 
     func makePDF(from image: UIImage, textBlocks: [RecognizedTextBlock]) -> Data {
@@ -41,9 +65,9 @@ final class ScanExportService: ScanExporting {
             throw ExportError.noPages
         }
 
-        let exportDirectory = FileManager.default.temporaryDirectory
+        let exportDirectory = temporaryDirectory
             .appendingPathComponent("tough-scan-\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.createDirectory(
+        try fileManager.createDirectory(
             at: exportDirectory,
             withIntermediateDirectories: true
         )
@@ -52,15 +76,17 @@ final class ScanExportService: ScanExporting {
         let textURL = exportDirectory.appendingPathComponent("tough-scan-text.txt")
 
         do {
-            try makeMultiPagePDF(from: pages).write(to: pdfURL, options: .atomic)
-            try makeTextFile(
-                from: pages,
-                intelligenceNotes: intelligenceNotes,
-                includesIntelligenceNotes: includesIntelligenceNotes
+            try dataWriter.write(makeMultiPagePDF(from: pages), to: pdfURL)
+            try dataWriter.write(
+                makeTextFile(
+                    from: pages,
+                    intelligenceNotes: intelligenceNotes,
+                    includesIntelligenceNotes: includesIntelligenceNotes
+                ),
+                to: textURL
             )
-            .write(to: textURL, options: .atomic)
         } catch {
-            try? FileManager.default.removeItem(at: exportDirectory)
+            try? fileManager.removeItem(at: exportDirectory)
             throw error
         }
 
