@@ -46,9 +46,11 @@ Use a real iPhone for camera validation; the simulator cannot prove the live sca
 11. Confirm the PDF contains both pages and the text file separates OCR text by page.
 12. Confirm no raw OCR text appears in debug logs.
 
-## Apple Intelligence Validation
+## Apple Intelligence Capability Validation
 
-Use an Apple Intelligence-capable iPhone running iOS 26 or later. Keep all validation local on device and do not capture screenshots or logs containing OCR text, generated summaries, or extracted personal details.
+Use an Apple Intelligence-capable iPhone running iOS 26 or later to validate AI-assisted review. This is a supported-device capability check, not a prerequisite for the basic scan, copy, and export flow.
+
+Keep all validation local on device. Do not capture screenshots or logs containing OCR text, generated summaries, or extracted personal details.
 
 1. With Apple Intelligence enabled and model assets ready, scan an English printed page and confirm Summarize, Extract key details, and Suggest cleaned text each produce advisory notes.
 2. Repeat with printed Hebrew text and confirm unsupported-language copy appears if generation is unavailable for the current locale.
