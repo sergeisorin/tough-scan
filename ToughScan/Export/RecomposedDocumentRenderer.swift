@@ -60,7 +60,7 @@ struct RecomposedDocumentRenderer {
         UIRectFill(pageRect)
 
         for block in page.recognizedTextBlocks {
-            draw(block, in: pageRect, usesVisionCoordinates: true)
+            draw(block, in: pageRect)
         }
 
         for region in page.visualRegions {
@@ -68,13 +68,17 @@ struct RecomposedDocumentRenderer {
         }
     }
 
-    private func draw(_ block: RecognizedTextBlock, in pageRect: CGRect, usesVisionCoordinates: Bool) {
+    private func draw(_ block: RecognizedTextBlock, in pageRect: CGRect) {
         guard let boundingBox = block.boundingBox,
               !block.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return
         }
 
-        let textRect = pixelRect(for: boundingBox, in: pageRect, usesVisionCoordinates: usesVisionCoordinates)
+        let textRect = boundingBox.pixelRect(
+            in: pageRect.size,
+            from: .visionBottomLeft,
+            origin: pageRect.origin
+        )
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.alignment = block.languageCode.contains("he") ? .right : .left
         paragraphStyle.baseWritingDirection = block.languageCode.contains("he") ? .rightToLeft : .leftToRight
@@ -95,18 +99,7 @@ struct RecomposedDocumentRenderer {
         )
     }
 
-    private func pixelRect(
-        for rect: NormalizedRect,
-        in pageRect: CGRect,
-        usesVisionCoordinates: Bool = false
-    ) -> CGRect {
-        let normalizedY = usesVisionCoordinates ? 1 - rect.y - rect.height : rect.y
-
-        return CGRect(
-            x: pageRect.minX + (rect.x * pageRect.width),
-            y: pageRect.minY + (normalizedY * pageRect.height),
-            width: rect.width * pageRect.width,
-            height: rect.height * pageRect.height
-        )
+    private func pixelRect(for rect: NormalizedRect, in pageRect: CGRect) -> CGRect {
+        rect.pixelRect(in: pageRect.size, from: .imageTopLeft, origin: pageRect.origin)
     }
 }

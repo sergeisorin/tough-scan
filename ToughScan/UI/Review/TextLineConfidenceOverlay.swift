@@ -19,12 +19,7 @@ struct TextLineConfidenceOverlay: View {
     }
 
     private func rect(for boundingBox: NormalizedRect, in size: CGSize) -> CGRect {
-        CGRect(
-            x: boundingBox.x * size.width,
-            y: (1 - boundingBox.y - boundingBox.height) * size.height,
-            width: boundingBox.width * size.width,
-            height: boundingBox.height * size.height
-        )
+        boundingBox.pixelRect(in: size, from: .visionBottomLeft)
     }
 }
 
