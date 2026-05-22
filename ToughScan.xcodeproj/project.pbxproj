@@ -33,6 +33,7 @@
 		54A73D8EC1EAC302B2C99652 /* ReviewPageSetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44D83CA69698900A7EABE868 /* ReviewPageSetTests.swift */; };
 		56495695C04F3B64FA2D8A74 /* VisualDocumentRegionDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D69336150DDB7046705352B5 /* VisualDocumentRegionDetectorTests.swift */; };
 		56F5F81B2F865F46A9D11A9A /* ReviewTextSourceBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A86CE1F9D7DCF3F30816D21B /* ReviewTextSourceBuilder.swift */; };
+		5923F010DC09587B6122EEFB /* OriginalImagePDFRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDEB07A883D9BB8B9FD9511 /* OriginalImagePDFRenderer.swift */; };
 		5DD361B545CF6A7BA6499E92 /* CameraControlState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48EB9803BA739625DB24357D /* CameraControlState.swift */; };
 		5E4EF76E9FE10CC31E4C0554 /* ConfidenceGridOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C145B6DE6173286F9BF2F107 /* ConfidenceGridOverlay.swift */; };
 		5EBE9B346E95533171BDCCE0 /* VisualDocumentRegionDetectionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 064D51AA8EE83F5035C72841 /* VisualDocumentRegionDetectionServiceTests.swift */; };
@@ -41,6 +42,7 @@
 		630CF58ABAE455BEAB36621F /* ReviewTextSourceBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A86CE1F9D7DCF3F30816D21B /* ReviewTextSourceBuilder.swift */; };
 		675DF4BE58200473AEA83E5F /* ScanAutomationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCAB6EA7094728C07B788253 /* ScanAutomationController.swift */; };
 		679FE30C3539B3E8C957FBDB /* DocumentIntelligenceServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1AFDCCDB4F00FD08D7F0EBE /* DocumentIntelligenceServiceTests.swift */; };
+		6B28E0218255B2A946A0E9B4 /* OriginalImagePDFRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC46BEC6C02D52CCDBC4AA8F /* OriginalImagePDFRendererTests.swift */; };
 		6F0AB09F2DB13F3E50B4427A /* ScanExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA34A48C82867A0735120BB /* ScanExportService.swift */; };
 		7E7801DB77FB50F9496A20B7 /* IntelligenceReviewPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23C0730A9DD3C2ED6C3E4544 /* IntelligenceReviewPanel.swift */; };
 		85DA3063F4F1B223AA0A1E3C /* RecoveredTextCopyController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51694339A9D9333FB18A8BCE /* RecoveredTextCopyController.swift */; };
@@ -83,6 +85,7 @@
 		D6234B7A148390C60E090A9E /* RecomposedDocumentRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6902426514A12A56BC065815 /* RecomposedDocumentRenderer.swift */; };
 		D634072555979826DBF2DA19 /* FrameQualityMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415CC34FE7C7BE37FE098B03 /* FrameQualityMetrics.swift */; };
 		D874B86BE0CC3C9D908B9929 /* ScanExportBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A511DED11126783F6C195158 /* ScanExportBundle.swift */; };
+		DC1238854A462483421520B6 /* OriginalImagePDFRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDEB07A883D9BB8B9FD9511 /* OriginalImagePDFRenderer.swift */; };
 		DC22472FBFC8B108A117E1B1 /* DocumentIntelligenceAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59034C39C22FA554C351EB30 /* DocumentIntelligenceAvailability.swift */; };
 		DC55FD6DF1E7DC5889EFAD4D /* DocumentIntelligenceAvailabilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EC1CD1453D58DCFDD5CD805 /* DocumentIntelligenceAvailabilityTests.swift */; };
 		DCBB5B83BB27626A0AC43E28 /* ConfidenceStateStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F8D59870DDBE52244D5CBE0 /* ConfidenceStateStyle.swift */; };
@@ -151,6 +154,7 @@
 		937222EB4807DBACD8677901 /* LiveTextImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTextImageView.swift; sourceTree = "<group>"; };
 		9477A6F2FA577FEFC813A436 /* VisualDocumentRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualDocumentRegion.swift; sourceTree = "<group>"; };
 		99AC13185ACE56799B528D7F /* ScanFrameProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanFrameProcessor.swift; sourceTree = "<group>"; };
+		9DDEB07A883D9BB8B9FD9511 /* OriginalImagePDFRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OriginalImagePDFRenderer.swift; sourceTree = "<group>"; };
 		A1AFDCCDB4F00FD08D7F0EBE /* DocumentIntelligenceServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentIntelligenceServiceTests.swift; sourceTree = "<group>"; };
 		A511DED11126783F6C195158 /* ScanExportBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanExportBundle.swift; sourceTree = "<group>"; };
 		A745083537F8F066FBD3F6F6 /* CameraControlStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraControlStateTests.swift; sourceTree = "<group>"; };
@@ -175,6 +179,7 @@
 		E71A512D247153307855A9E6 /* StructuredDocumentRecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StructuredDocumentRecognitionService.swift; sourceTree = "<group>"; };
 		F6DD2773A2F8463BCC404361 /* VisualDocumentRegionDetectionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualDocumentRegionDetectionCoordinator.swift; sourceTree = "<group>"; };
 		FA779682C03AE0C04AA2C9DC /* StructuredDocumentRecognitionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StructuredDocumentRecognitionCoordinator.swift; sourceTree = "<group>"; };
+		FC46BEC6C02D52CCDBC4AA8F /* OriginalImagePDFRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OriginalImagePDFRendererTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -366,6 +371,7 @@
 		90A5204393F05456F600CD5A /* Export */ = {
 			isa = PBXGroup;
 			children = (
+				9DDEB07A883D9BB8B9FD9511 /* OriginalImagePDFRenderer.swift */,
 				6902426514A12A56BC065815 /* RecomposedDocumentRenderer.swift */,
 				A511DED11126783F6C195158 /* ScanExportBundle.swift */,
 				DEA34A48C82867A0735120BB /* ScanExportService.swift */,
@@ -376,6 +382,7 @@
 		C493054EA36F5E18A1FD18A9 /* Export */ = {
 			isa = PBXGroup;
 			children = (
+				FC46BEC6C02D52CCDBC4AA8F /* OriginalImagePDFRendererTests.swift */,
 				D2335DF7B531AC208644D996 /* RecomposedDocumentRendererTests.swift */,
 				38D150155C8B36832194E9BD /* ScanExportServiceTests.swift */,
 			);
@@ -502,6 +509,7 @@
 				9EAA8F52A9629D26C029A824 /* LiveScanView.swift in Sources */,
 				544ABAEC05BDA8B297BC0FAC /* LiveTextImageView.swift in Sources */,
 				A937D6F22D1A4E647CBEE137 /* NormalizedDocumentPreviewView.swift in Sources */,
+				5923F010DC09587B6122EEFB /* OriginalImagePDFRenderer.swift in Sources */,
 				C546682E145CF0AFD5E857E7 /* PerspectiveNormalizer.swift in Sources */,
 				D6234B7A148390C60E090A9E /* RecomposedDocumentRenderer.swift in Sources */,
 				11DF4FA95A61D6CD03A157A0 /* RecoveredTextCopyController.swift in Sources */,
@@ -554,6 +562,8 @@
 				BD4479157C68A778F3A9C87D /* ImageEnhancer.swift in Sources */,
 				A98988512A41ADD6A562102B /* ImageEnhancerTests.swift in Sources */,
 				E0AACAF809C30773343FC05E /* LensSmudgeDetector.swift in Sources */,
+				DC1238854A462483421520B6 /* OriginalImagePDFRenderer.swift in Sources */,
+				6B28E0218255B2A946A0E9B4 /* OriginalImagePDFRendererTests.swift in Sources */,
 				A4EC6FE32ACE05D9BB797063 /* RecomposedDocumentRenderer.swift in Sources */,
 				53C257D4FAF362FB96C56AE1 /* RecomposedDocumentRendererTests.swift in Sources */,
 				85DA3063F4F1B223AA0A1E3C /* RecoveredTextCopyController.swift in Sources */,
