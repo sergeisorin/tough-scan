@@ -13,15 +13,14 @@ struct ScanReviewView: View {
 
     @State private var activeExportBundle: ScanExportBundle?
     @State private var exportErrorMessage: String?
-    @State private var structuredDocument: StructuredDocument?
-    @State private var structuredRecognitionMessage: String?
+    @State private var structuredRecognitionCoordinator = StructuredDocumentRecognitionCoordinator()
     @State private var documentIntelligenceAvailability: DocumentIntelligenceAvailability = .unknown
     @State private var intelligenceRunCoordinator = DocumentIntelligenceRunCoordinator()
     @State private var includesIntelligenceNotesInExport = false
     @State private var copyConfirmationMessage: String?
 
     private let exportService = ScanExportService()
-    private let structuredRecognitionService = StructuredDocumentRecognitionService()
+    private let structuredRecognitionService: any StructuredDocumentRecognizing
     private let intelligenceService = DocumentIntelligenceService()
     private let intelligenceAvailabilityProvider: any DocumentIntelligenceAvailabilityProviding
     private let recoveredTextCopyController: RecoveredTextCopyController
@@ -34,7 +33,8 @@ struct ScanReviewView: View {
         onRemoveCapturedPage: @escaping (ScannedPage.ID) -> Void,
         onRescan: @escaping () -> Void,
         intelligenceAvailabilityProvider: any DocumentIntelligenceAvailabilityProviding = SystemDocumentIntelligenceAvailabilityProvider(),
-        recoveredTextCopyController: RecoveredTextCopyController = RecoveredTextCopyController()
+        recoveredTextCopyController: RecoveredTextCopyController = RecoveredTextCopyController(),
+        structuredRecognitionService: any StructuredDocumentRecognizing = StructuredDocumentRecognitionService()
     ) {
         self.session = session
         self.snapshot = snapshot
@@ -44,6 +44,7 @@ struct ScanReviewView: View {
         self.onRescan = onRescan
         self.intelligenceAvailabilityProvider = intelligenceAvailabilityProvider
         self.recoveredTextCopyController = recoveredTextCopyController
+        self.structuredRecognitionService = structuredRecognitionService
     }
 
     var body: some View {
@@ -107,6 +108,12 @@ struct ScanReviewView: View {
 
                 if let copyConfirmationMessage {
                     Text(copyConfirmationMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                if showsImageOnlyExportMessage {
+                    Text("Image-only PDF export is available, but no copyable text is ready yet. Rescan weak areas to improve text recovery.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -181,6 +188,14 @@ struct ScanReviewView: View {
         )
     }
 
+    private var structuredDocument: StructuredDocument? {
+        structuredRecognitionCoordinator.document
+    }
+
+    private var structuredRecognitionMessage: String? {
+        structuredRecognitionCoordinator.message
+    }
+
     private var pagesForExport: [ScannedPage] {
         pageSet.pagesForExport
     }
@@ -199,6 +214,10 @@ struct ScanReviewView: View {
 
     private var recoveredTextSource: String {
         ReviewTextSourceBuilder.makeSource(from: pagesForExport)
+    }
+
+    private var showsImageOnlyExportMessage: Bool {
+        !pagesForExport.isEmpty && recoveredTextSource.isEmpty
     }
 
     private func refreshDocumentIntelligenceAvailability() {
@@ -235,19 +254,17 @@ struct ScanReviewView: View {
     @MainActor
     private func recognizeStructuredDocument() async {
         guard let snapshot else {
-            structuredDocument = nil
-            structuredRecognitionMessage = nil
+            structuredRecognitionCoordinator.clear()
             return
         }
 
-        structuredRecognitionMessage = "Analyzing document structure locally."
+        let request = structuredRecognitionCoordinator.begin(snapshotID: snapshot.id)
 
         do {
-            structuredDocument = try await structuredRecognitionService.recognizeDocument(in: snapshot.image)
-            structuredRecognitionMessage = nil
+            let document = try await structuredRecognitionService.recognizeDocument(in: snapshot.image)
+            structuredRecognitionCoordinator.complete(request, document: document)
         } catch {
-            structuredDocument = nil
-            structuredRecognitionMessage = "Structured document analysis is unavailable for this scan."
+            structuredRecognitionCoordinator.fail(request)
         }
     }
 
