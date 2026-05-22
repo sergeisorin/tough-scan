@@ -39,6 +39,31 @@ final class ScanExportServiceTests: XCTestCase {
         XCTAssertThrowsError(try service.makeExportBundle(from: []))
     }
 
+    func testMakeExportBundleRemovesDirectoryWhenWriteFails() throws {
+        let temporaryRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("tough-scan-export-test-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: temporaryRoot, withIntermediateDirectories: true)
+        defer {
+            try? FileManager.default.removeItem(at: temporaryRoot)
+        }
+
+        let writer = FailingExportDataWriter(failsOnWriteNumber: 2)
+        let service = ScanExportService(
+            temporaryDirectory: temporaryRoot,
+            dataWriter: writer
+        )
+
+        XCTAssertThrowsError(
+            try service.makeExportBundle(from: [makePage(text: "Original text", size: CGSize(width: 120, height: 180))])
+        )
+
+        let remainingItems = try FileManager.default.contentsOfDirectory(
+            at: temporaryRoot,
+            includingPropertiesForKeys: nil
+        )
+        XCTAssertEqual(remainingItems, [])
+    }
+
     func testMakeExportBundleUsesStructuredDocumentTextWhenAvailable() throws {
         let service = ScanExportService()
         let page = ScannedPage(
@@ -168,6 +193,28 @@ final class ScanExportServiceTests: XCTestCase {
             UIColor.black.setFill()
             context.fill(CGRect(x: 12, y: 12, width: size.width - 24, height: 2))
         }
+    }
+}
+
+private final class FailingExportDataWriter: ExportDataWriting {
+    enum Error: Swift.Error {
+        case writeFailed
+    }
+
+    private let failsOnWriteNumber: Int
+    private var writeCount = 0
+
+    init(failsOnWriteNumber: Int) {
+        self.failsOnWriteNumber = failsOnWriteNumber
+    }
+
+    func write(_ data: Data, to url: URL) throws {
+        writeCount += 1
+        if writeCount == failsOnWriteNumber {
+            throw Error.writeFailed
+        }
+
+        try data.write(to: url, options: .atomic)
     }
 }
 
