@@ -16,7 +16,8 @@ Tough Scan treats scanning as an evidence-gathering process instead of a one-sho
 - **Guided rescans:** confidence overlays highlight missing or weak areas so the user knows where to move next.
 - **Local OCR:** Hebrew and English text recognition runs through Apple's on-device Vision APIs.
 - **Review before export:** users can inspect the reconstructed page, recovered text, structured details, and weak regions before sharing anything.
-- **Local exports:** the app prepares a multi-page PDF and text file on device.
+- **Visual mark preservation:** likely stamps, signatures, seals, and similar non-text marks are detected locally and shown in review.
+- **Local exports:** the app prepares a multi-page PDF and text file on device, with original-image PDF as the default and cleaned/recomposed PDF as an opt-in path when enough positioned text is available.
 - **AI-assisted extraction:** on supported devices, Apple Intelligence helps turn recovered text into structured details and cleaner copy while keeping notes local and advisory.
 
 ## AI-Assisted Text Extraction
@@ -71,6 +72,12 @@ The first launch asks for camera access because Tough Scan uses the camera to re
 5. Copy recovered text, rescan weak areas, add another page, or export the local result.
 6. Share the generated PDF and text file only when you choose to export.
 
+## PDF Export Options
+
+Tough Scan keeps the original-image PDF as the default because it preserves the recovered page exactly as reviewed. This is the safest export for difficult scans, handwriting-like marks, uncertain OCR placement, or documents where visual fidelity matters most.
+
+When positioned OCR text is available, Review also offers a cleaned/recomposed PDF option. That path renders recovered text onto a white page and overlays detected visual marks such as likely stamps, signatures, or seals back into their normalized positions. Detection is local and best-effort: it identifies likely non-text marks, not legal identity, signature authenticity, or stamp verification. If a page cannot be safely recomposed because positioned OCR boxes are missing, that page falls back to the original-image PDF rendering.
+
 ## Privacy Model
 
 Tough Scan is built for personal and sensitive documents:
@@ -79,6 +86,7 @@ Tough Scan is built for personal and sensitive documents:
 - No server OCR is used.
 - No cloud sync is part of the app flow.
 - OCR runs locally through Apple's Vision APIs.
+- Visual mark detection runs locally and does not send crops or page images to external services.
 - Apple Intelligence notes, when available, are local and optional.
 - Exports are created locally and shared only through the iOS share sheet.
 

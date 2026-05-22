@@ -18,9 +18,11 @@ struct ScanReviewView: View {
     @State private var documentIntelligenceAvailability: DocumentIntelligenceAvailability = .unknown
     @State private var intelligenceRunCoordinator = DocumentIntelligenceRunCoordinator()
     @State private var includesIntelligenceNotesInExport = false
+    @State private var selectedExportMode: ScanExportMode = .originalImagePDF
     @State private var copyConfirmationMessage: String?
 
     private let exportService = ScanExportService()
+    private let recomposedDocumentRenderer = RecomposedDocumentRenderer()
     private let structuredRecognitionService: any StructuredDocumentRecognizing
     private let visualRegionDetector = VisualDocumentRegionDetector()
     private let intelligenceService = DocumentIntelligenceService()
@@ -127,6 +129,11 @@ struct ScanReviewView: View {
 
                 CopyableTextPanel(summary: recoveredTextSummary)
 
+                ExportModePanel(
+                    selectedMode: $selectedExportMode,
+                    message: exportModeMessage
+                )
+
                 if !intelligenceRunCoordinator.notes.isEmpty {
                     Toggle("Include intelligence notes in export", isOn: $includesIntelligenceNotesInExport)
                         .font(.subheadline.weight(.medium))
@@ -149,7 +156,7 @@ struct ScanReviewView: View {
 
                     Button("Export local result", action: prepareExport)
                     .buttonStyle(.borderedProminent)
-                    .disabled(pagesForExport.isEmpty)
+                    .disabled(pagesForExport.isEmpty || isSelectedExportModeUnavailable)
                 }
                 .controlSize(.large)
             }
@@ -249,6 +256,36 @@ struct ScanReviewView: View {
         !pagesForExport.isEmpty && recoveredTextSummary.isEmpty
     }
 
+    private var recomposedEligiblePageCount: Int {
+        pagesForExport.filter { recomposedDocumentRenderer.isEligibleForRecomposition($0) }.count
+    }
+
+    private var isSelectedExportModeUnavailable: Bool {
+        selectedExportMode == .recomposedPDFWithVisualMarks &&
+            recomposedEligiblePageCount == 0
+    }
+
+    private var exportModeMessage: String {
+        switch selectedExportMode {
+        case .originalImagePDF:
+            return "Default. Preserves the recovered page image exactly as reviewed."
+        case .recomposedPDFWithVisualMarks:
+            guard !pagesForExport.isEmpty else {
+                return "Cleaned/recomposed export becomes available after a page is ready."
+            }
+
+            guard recomposedEligiblePageCount > 0 else {
+                return "Cleaned/recomposed export needs positioned OCR text. Use original-image PDF for this scan."
+            }
+
+            if recomposedEligiblePageCount < pagesForExport.count {
+                return "Eligible pages will be recomposed; pages without positioned text will fall back to original-image PDF."
+            }
+
+            return "Experimental. Rebuilds text on a white page and overlays detected visual marks."
+        }
+    }
+
     private func refreshDocumentIntelligenceAvailability() {
         documentIntelligenceAvailability = intelligenceAvailabilityProvider.currentAvailability()
     }
@@ -259,7 +296,8 @@ struct ScanReviewView: View {
             activeExportBundle = try exportService.makeExportBundle(
                 from: pagesForExport,
                 intelligenceNotes: intelligenceRunCoordinator.notes,
-                includesIntelligenceNotes: includesIntelligenceNotesInExport
+                includesIntelligenceNotes: includesIntelligenceNotesInExport,
+                exportMode: selectedExportMode
             )
             exportErrorMessage = nil
         } catch {
@@ -537,6 +575,33 @@ private struct CopyableTextPanel: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+}
+
+private struct ExportModePanel: View {
+    @Binding var selectedMode: ScanExportMode
+    let message: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("PDF export")
+                .font(.headline)
+
+            Picker("PDF export mode", selection: $selectedMode) {
+                ForEach(ScanExportMode.allCases) { mode in
+                    Text(mode.title).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            Text(message)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)

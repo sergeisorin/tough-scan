@@ -26,6 +26,7 @@ The product should feel like a document recovery instrument: calm, precise, and 
 10. The app must export local results as PDF and text files.
 11. The app must support multi-page scan sets for export.
 12. The app must keep document images, OCR text, and generated notes on device.
+13. The app should preserve important non-text visual marks such as likely stamps, signatures, and seals in review and recomposed exports when they can be detected locally.
 
 ## Copy-Recovery Requirements
 
@@ -55,6 +56,9 @@ The product should feel like a document recovery instrument: calm, precise, and 
 6. Export must fail cleanly if no page is ready.
 7. Export must clean up temporary files after sharing.
 8. Export must not include optional intelligence notes unless the user explicitly enables that option.
+9. Original-image PDF export must remain the default and fallback.
+10. Cleaned/recomposed PDF export must be optional, clearly labeled, and unavailable or partially fall back when positioned OCR text is insufficient.
+11. Recomputed document overlays must treat stamps, signatures, and seals as likely visual marks only, not identity or legal-signature verification.
 
 ## AI-Assisted Review Capability
 
@@ -72,6 +76,7 @@ These features must be local, clearly labeled as advisory, unavailable without b
 - Cloud OCR or server-side document processing.
 - User accounts, sync, or document library management.
 - Handwriting recognition in the MVP.
+- Legal signature, identity, stamp, or seal verification.
 - Generic photo/video analysis unrelated to document recovery.
 - Making Apple Intelligence a prerequisite for scanning, OCR, copy, or export.
 - Storing or logging document content, OCR text, extracted PII, prompts, or generated notes.
@@ -84,8 +89,8 @@ The implemented app already covers more than the original MVP scaffold:
 - AVFoundation camera capture and camera controls exist.
 - Vision document detection, perspective normalization, image enhancement, OCR, and confidence mapping exist.
 - Frame quality analysis, camera assist, and lens-smudge detection are present.
-- Review includes confidence overlays, recovered text, Live Text image display, structured document output, multi-page export, and local AI-assisted review notes on supported devices.
-- PDF and text export bundles exist.
+- Review includes confidence overlays, recovered text, Live Text image display, structured document output, likely visual mark previews, multi-page export, and local AI-assisted review notes on supported devices.
+- PDF and text export bundles exist, including original-image PDF by default and optional cleaned/recomposed PDF with visual mark overlays when pages are eligible.
 - Unit tests cover many core, processing, export, and optional-intelligence behaviors.
 
 The near-term product is iOS 26-first. iOS 26 APIs are part of the current implementation when they improve document recovery, structured recognition, local AI-assisted review, or export, but Apple Intelligence must still degrade gracefully and never block scan, OCR, copy, or export. Translation is not relevant to the current goal.

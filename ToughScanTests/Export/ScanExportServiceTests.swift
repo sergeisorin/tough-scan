@@ -169,7 +169,95 @@ final class ScanExportServiceTests: XCTestCase {
         XCTAssertTrue(text.contains("Clean text"))
     }
 
-    private func makePage(text: String, size: CGSize) -> ScannedPage {
+    func testDefaultExportStillUsesOriginalImagePDF() throws {
+        let service = ScanExportService()
+        let page = makePage(
+            text: "Selectable recomposed text",
+            size: CGSize(width: 120, height: 180),
+            boundingBox: NormalizedRect(x: 0.10, y: 0.20, width: 0.70, height: 0.14)
+        )
+
+        let bundle = try service.makeExportBundle(from: [page])
+        defer {
+            bundle.cleanup()
+        }
+
+        let pdfURL = try XCTUnwrap(bundle.fileURLs.first { $0.pathExtension == "pdf" })
+        let pdf = try XCTUnwrap(PDFDocument(url: pdfURL))
+
+        XCTAssertFalse(pdf.string?.contains("Selectable recomposed text") == true)
+    }
+
+    func testRecomposedExportWritesSelectablePDFWhenEligible() throws {
+        let service = ScanExportService()
+        let page = makePage(
+            text: "Selectable recomposed text",
+            size: CGSize(width: 120, height: 180),
+            boundingBox: NormalizedRect(x: 0.10, y: 0.20, width: 0.70, height: 0.14)
+        )
+
+        let bundle = try service.makeExportBundle(
+            from: [page],
+            exportMode: .recomposedPDFWithVisualMarks
+        )
+        defer {
+            bundle.cleanup()
+        }
+
+        let pdfURL = try XCTUnwrap(bundle.fileURLs.first { $0.pathExtension == "pdf" })
+        let pdf = try XCTUnwrap(PDFDocument(url: pdfURL))
+
+        XCTAssertEqual(pdf.string, "Selectable recomposed text")
+    }
+
+    func testTextExportStillUsesReviewTextSourceBuilderForRecomposedMode() throws {
+        let service = ScanExportService()
+        let pages = [
+            makePage(
+                text: "Recomposed page text",
+                size: CGSize(width: 120, height: 180),
+                boundingBox: NormalizedRect(x: 0.10, y: 0.20, width: 0.70, height: 0.14)
+            )
+        ]
+
+        let bundle = try service.makeExportBundle(
+            from: pages,
+            exportMode: .recomposedPDFWithVisualMarks
+        )
+        defer {
+            bundle.cleanup()
+        }
+
+        let textURL = try XCTUnwrap(bundle.fileURLs.first { $0.pathExtension == "txt" })
+        let text = try String(contentsOf: textURL, encoding: .utf8)
+
+        XCTAssertEqual(text, ReviewTextSourceBuilder.makeSource(from: pages))
+    }
+
+    func testRecomposedExportCleanupRemovesTemporaryFiles() throws {
+        let service = ScanExportService()
+        let bundle = try service.makeExportBundle(
+            from: [
+                makePage(
+                    text: "Recomposed page text",
+                    size: CGSize(width: 120, height: 180),
+                    boundingBox: NormalizedRect(x: 0.10, y: 0.20, width: 0.70, height: 0.14)
+                )
+            ],
+            exportMode: .recomposedPDFWithVisualMarks
+        )
+        let exportDirectory = bundle.directoryURL
+
+        bundle.cleanup()
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: exportDirectory.path))
+    }
+
+    private func makePage(
+        text: String,
+        size: CGSize,
+        boundingBox: NormalizedRect? = nil
+    ) -> ScannedPage {
         ScannedPage(
             snapshot: DocumentSnapshot(
                 image: makeImage(size: size),
@@ -180,7 +268,8 @@ final class ScanExportServiceTests: XCTestCase {
                     text: text,
                     confidence: 0.91,
                     languageCode: "en",
-                    tileCoordinates: [TileCoordinate(column: 0, row: 0)]
+                    tileCoordinates: [TileCoordinate(column: 0, row: 0)],
+                    boundingBox: boundingBox
                 )
             ]
         )
