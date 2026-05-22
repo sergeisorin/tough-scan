@@ -11,6 +11,12 @@ struct PasteboardClipboard: ClipboardCopying {
     }
 }
 
+struct RecoveredTextCopyResult: Equatable {
+    let didCopy: Bool
+    let message: String
+    let summary: ReviewTextSourceSummary
+}
+
 struct RecoveredTextCopyController {
     private let clipboard: ClipboardCopying
 
@@ -20,12 +26,25 @@ struct RecoveredTextCopyController {
 
     @discardableResult
     func copyRecoveredText(from pages: [ScannedPage]) -> Bool {
-        let source = ReviewTextSourceBuilder.makeSource(from: pages)
-        guard !source.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            return false
+        copyRecoveredTextResult(from: pages).didCopy
+    }
+
+    @discardableResult
+    func copyRecoveredTextResult(from pages: [ScannedPage]) -> RecoveredTextCopyResult {
+        let summary = ReviewTextSourceBuilder.makeSummary(from: pages)
+        guard !summary.isEmpty else {
+            return RecoveredTextCopyResult(
+                didCopy: false,
+                message: "No recovered text is ready to copy yet.",
+                summary: summary
+            )
         }
 
-        clipboard.copy(source)
-        return true
+        clipboard.copy(summary.text)
+        return RecoveredTextCopyResult(
+            didCopy: true,
+            message: "Copied \(summary.sourceDescription) from \(summary.copyablePageDescription).",
+            summary: summary
+        )
     }
 }
