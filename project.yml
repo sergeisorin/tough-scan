@@ -36,6 +36,7 @@ targets:
     sources:
       - ToughScanTests
       - ToughScan/Export/ScanExportBundle.swift
+      - ToughScan/Export/RecomposedDocumentRenderer.swift
       - ToughScan/Export/ScanExportService.swift
       - ToughScan/Camera/CameraControlState.swift
       - ToughScan/Camera/ScanAutomationController.swift
