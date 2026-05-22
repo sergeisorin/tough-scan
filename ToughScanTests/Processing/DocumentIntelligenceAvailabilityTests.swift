@@ -31,4 +31,20 @@ final class DocumentIntelligenceAvailabilityTests: XCTestCase {
         XCTAssertFalse(availability.canGenerate)
         XCTAssertEqual(availability.title, "Apple Intelligence is off")
     }
+
+    func testStaticProviderCanSimulateAllReviewStates() {
+        let states: [DocumentIntelligenceAvailability] = [
+            .available,
+            .deviceNotEligible,
+            .appleIntelligenceNotEnabled,
+            .modelNotReady,
+            .unsupportedLocale,
+            .unknown
+        ]
+
+        for state in states {
+            let provider = StaticDocumentIntelligenceAvailabilityProvider(availability: state)
+            XCTAssertEqual(provider.currentAvailability(), state)
+        }
+    }
 }
