@@ -22,9 +22,9 @@ struct IntelligenceReviewPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 6) {
-                Text("Apple Intelligence suggestions")
+                Text("AI-assisted review")
                     .font(.headline)
-                Text("These local suggestions are advisory. They do not replace recovered OCR or structured document text.")
+                Text("Use Apple Intelligence on supported devices to summarize, extract, or clean recovered text. Notes are local and advisory.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -32,18 +32,18 @@ struct IntelligenceReviewPanel: View {
             if !availability.canGenerate {
                 availabilityMessage
             } else if sourceText.isEmpty {
-                Text("Scan or add a page with recovered text before using Apple Intelligence.")
+                Text("AI-assisted review needs recovered text first. Rescan weak areas or add a page, then copy and export remain available when text is recovered.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             } else {
                 actionList
             }
 
-            if notes.isEmpty {
+            if notes.isEmpty && canRunActions {
                 Text("Run an action to generate notes for this review.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-            } else {
+            } else if !notes.isEmpty {
                 generatedNotes
             }
         }

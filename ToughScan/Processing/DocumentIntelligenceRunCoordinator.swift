@@ -63,7 +63,7 @@ enum DocumentIntelligenceRunState: Equatable {
         case .failed(let failedAction, let failure) where failedAction == action:
             return failure.message
         case .emptySource(let emptyAction) where emptyAction == action:
-            return "Scan or add a page with recovered text before using Apple Intelligence."
+            return "AI-assisted review needs recovered text first. Rescan weak areas or add a page before running this action."
         case .staleSource(let staleAction) where staleAction == action:
             return "Document text changed. Run the action again for the latest page set."
         case .idle, .unavailable, .running, .succeeded, .failed, .emptySource, .staleSource:
