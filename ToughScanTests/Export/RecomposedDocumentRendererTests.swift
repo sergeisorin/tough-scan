@@ -31,6 +31,37 @@ final class RecomposedDocumentRendererTests: XCTestCase {
         XCTAssertTrue(sampledColor(from: pdfPage, at: CGPoint(x: 0.74, y: 0.26)).isMostlyBlue)
     }
 
+    func testRendererPlacesVisionTextBoxesUsingBottomLeftYCoordinates() throws {
+        let page = makePage(
+            textBlocks: [
+                RecognizedTextBlock(
+                    text: "TOP TEXT",
+                    confidence: 0.93,
+                    languageCode: "en",
+                    tileCoordinates: [],
+                    boundingBox: NormalizedRect(x: 0.10, y: 0.70, width: 0.80, height: 0.16)
+                )
+            ],
+            visualRegions: []
+        )
+
+        let result = RecomposedDocumentRenderer().makePDF(from: [page])
+        let pdf = try XCTUnwrap(PDFDocument(data: result.data))
+        let pdfPage = try XCTUnwrap(pdf.page(at: 0))
+
+        let expectedTopTextPixels = darkPixelCount(
+            from: pdfPage,
+            in: NormalizedRect(x: 0.08, y: 0.10, width: 0.84, height: 0.22)
+        )
+        let mirroredBottomTextPixels = darkPixelCount(
+            from: pdfPage,
+            in: NormalizedRect(x: 0.08, y: 0.66, width: 0.84, height: 0.22)
+        )
+
+        XCTAssertGreaterThan(expectedTopTextPixels, 20)
+        XCTAssertLessThan(mirroredBottomTextPixels, expectedTopTextPixels / 3)
+    }
+
     func testRendererFallsBackToOriginalImageWhenTextBoxesAreMissing() throws {
         let page = makePage(
             imageBackgroundColor: .systemYellow,
@@ -105,6 +136,27 @@ final class RecomposedDocumentRendererTests: XCTestCase {
         let y = min(max(Int(normalizedPoint.y * thumbnail.size.height), 0), Int(thumbnail.size.height) - 1)
         return thumbnail.colorAtPixel(x: x, y: y)
     }
+
+    private func darkPixelCount(from page: PDFPage, in rect: NormalizedRect) -> Int {
+        let thumbnail = page.thumbnail(of: CGSize(width: 240, height: 320), for: .mediaBox)
+        let pixelRect = CGRect(
+            x: rect.x * thumbnail.size.width,
+            y: rect.y * thumbnail.size.height,
+            width: rect.width * thumbnail.size.width,
+            height: rect.height * thumbnail.size.height
+        ).integral
+
+        var count = 0
+        for x in Int(pixelRect.minX)..<Int(pixelRect.maxX) {
+            for y in Int(pixelRect.minY)..<Int(pixelRect.maxY) {
+                if thumbnail.colorAtPixel(x: x, y: y).isDark {
+                    count += 1
+                }
+            }
+        }
+
+        return count
+    }
 }
 
 private extension UIColor {
@@ -121,6 +173,11 @@ private extension UIColor {
     var isMostlyYellow: Bool {
         let rgba = rgbaComponents
         return rgba.red > 0.65 && rgba.green > 0.55 && rgba.blue < 0.35
+    }
+
+    var isDark: Bool {
+        let rgba = rgbaComponents
+        return (rgba.red + rgba.green + rgba.blue) / 3 < 0.45
     }
 
     private var rgbaComponents: (red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) {
