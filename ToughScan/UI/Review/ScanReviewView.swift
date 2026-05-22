@@ -18,11 +18,13 @@ struct ScanReviewView: View {
     @State private var documentIntelligenceAvailability: DocumentIntelligenceAvailability = .unknown
     @State private var intelligenceRunCoordinator = DocumentIntelligenceRunCoordinator()
     @State private var includesIntelligenceNotesInExport = false
+    @State private var copyConfirmationMessage: String?
 
     private let exportService = ScanExportService()
     private let structuredRecognitionService = StructuredDocumentRecognitionService()
     private let intelligenceService = DocumentIntelligenceService()
     private let intelligenceAvailabilityProvider: any DocumentIntelligenceAvailabilityProviding
+    private let recoveredTextCopyController: RecoveredTextCopyController
 
     init(
         session: ProgressiveScanSession,
@@ -31,7 +33,8 @@ struct ScanReviewView: View {
         onAddPage: @escaping (StructuredDocument?) -> Void,
         onRemoveCapturedPage: @escaping (ScannedPage.ID) -> Void,
         onRescan: @escaping () -> Void,
-        intelligenceAvailabilityProvider: any DocumentIntelligenceAvailabilityProviding = SystemDocumentIntelligenceAvailabilityProvider()
+        intelligenceAvailabilityProvider: any DocumentIntelligenceAvailabilityProviding = SystemDocumentIntelligenceAvailabilityProvider(),
+        recoveredTextCopyController: RecoveredTextCopyController = RecoveredTextCopyController()
     ) {
         self.session = session
         self.snapshot = snapshot
@@ -40,6 +43,7 @@ struct ScanReviewView: View {
         self.onRemoveCapturedPage = onRemoveCapturedPage
         self.onRescan = onRescan
         self.intelligenceAvailabilityProvider = intelligenceAvailabilityProvider
+        self.recoveredTextCopyController = recoveredTextCopyController
     }
 
     var body: some View {
@@ -66,7 +70,7 @@ struct ScanReviewView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Selectable image text")
                             .font(.headline)
-                        Text("Use Live Text here to select, copy, translate, or open detected data from the reconstructed page.")
+                        Text("Use Live Text here to select, copy, or open detected data from the reconstructed page.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         LiveTextImageView(image: snapshot.image)
@@ -101,6 +105,12 @@ struct ScanReviewView: View {
                         .foregroundStyle(.red)
                 }
 
+                if let copyConfirmationMessage {
+                    Text(copyConfirmationMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
                 if !intelligenceRunCoordinator.notes.isEmpty {
                     Toggle("Include intelligence notes in export", isOn: $includesIntelligenceNotesInExport)
                         .font(.subheadline.weight(.medium))
@@ -110,6 +120,10 @@ struct ScanReviewView: View {
                 HStack(spacing: 12) {
                     Button("Rescan weak areas", action: onRescan)
                         .buttonStyle(.bordered)
+
+                    Button("Copy recovered text", action: copyRecoveredText)
+                        .buttonStyle(.bordered)
+                        .disabled(recoveredTextSource.isEmpty)
 
                     Button("Add another page") {
                         onAddPage(structuredDocument)
@@ -174,11 +188,15 @@ struct ScanReviewView: View {
     }
 
     private var documentIntelligenceSource: String {
-        ReviewTextSourceBuilder.makeSource(from: pagesForExport)
+        recoveredTextSource
     }
 
     private var documentIntelligenceSourceID: String {
         documentIntelligenceSource
+    }
+
+    private var recoveredTextSource: String {
+        ReviewTextSourceBuilder.makeSource(from: pagesForExport)
     }
 
     private func refreshDocumentIntelligenceAvailability() {
@@ -195,6 +213,14 @@ struct ScanReviewView: View {
             exportErrorMessage = nil
         } catch {
             exportErrorMessage = "Could not prepare the local export. Try rescanning the page."
+        }
+    }
+
+    private func copyRecoveredText() {
+        if recoveredTextCopyController.copyRecoveredText(from: pagesForExport) {
+            copyConfirmationMessage = "Recovered text copied."
+        } else {
+            copyConfirmationMessage = "No recovered text is ready to copy yet."
         }
     }
 
@@ -444,6 +470,7 @@ private struct RecognizedTextPanel: View {
 
                         Text(block.text)
                             .font(.body)
+                            .textSelection(.enabled)
                             .multilineTextAlignment(block.languageCode.contains("he") ? .trailing : .leading)
                             .frame(maxWidth: .infinity, alignment: block.languageCode.contains("he") ? .trailing : .leading)
                     }

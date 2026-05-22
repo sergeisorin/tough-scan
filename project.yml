@@ -49,6 +49,7 @@ targets:
       - ToughScan/Processing/FrameQualityMetrics.swift
       - ToughScan/Processing/ImageEnhancer.swift
       - ToughScan/Processing/LensSmudgeDetector.swift
+      - ToughScan/Processing/RecoveredTextCopyController.swift
       - ToughScan/Processing/ReviewPageSet.swift
       - ToughScan/Processing/ReviewTextSourceBuilder.swift
       - ToughScan/Processing/ScanMessageCoordinator.swift
