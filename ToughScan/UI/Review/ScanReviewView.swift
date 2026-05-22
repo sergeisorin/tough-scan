@@ -141,11 +141,13 @@ struct ScanReviewView: View {
         }
         .navigationTitle("Review")
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(item: $activeExportBundle) { bundle in
+        .sheet(item: $activeExportBundle, onDismiss: cleanupActiveExportBundle) { bundle in
             ShareSheetView(activityItems: bundle.fileURLs) {
-                bundle.cleanup()
-                activeExportBundle = nil
+                cleanupActiveExportBundle()
             }
+        }
+        .onDisappear {
+            cleanupActiveExportBundle()
         }
         .task(id: snapshot?.id) {
             await recognizeStructuredDocument()
@@ -205,6 +207,7 @@ struct ScanReviewView: View {
 
     private func prepareExport() {
         do {
+            cleanupActiveExportBundle()
             activeExportBundle = try exportService.makeExportBundle(
                 from: pagesForExport,
                 intelligenceNotes: intelligenceRunCoordinator.notes,
@@ -214,6 +217,11 @@ struct ScanReviewView: View {
         } catch {
             exportErrorMessage = "Could not prepare the local export. Try rescanning the page."
         }
+    }
+
+    private func cleanupActiveExportBundle() {
+        activeExportBundle?.cleanup()
+        activeExportBundle = nil
     }
 
     private func copyRecoveredText() {
