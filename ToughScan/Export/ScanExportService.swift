@@ -6,7 +6,11 @@ import UIKit
 protocol ScanExporting {
     func makePDF(from image: UIImage, textBlocks: [RecognizedTextBlock]) -> Data
     func makeTextFile(from textBlocks: [RecognizedTextBlock]) -> Data
-    func makeExportBundle(from pages: [ScannedPage]) throws -> ScanExportBundle
+    func makeExportBundle(
+        from pages: [ScannedPage],
+        intelligenceNotes: DocumentIntelligenceNotes?,
+        includesIntelligenceNotes: Bool
+    ) throws -> ScanExportBundle
 }
 
 final class ScanExportService: ScanExporting {
@@ -37,7 +41,11 @@ final class ScanExportService: ScanExporting {
         return Data(text.utf8)
     }
 
-    func makeExportBundle(from pages: [ScannedPage]) throws -> ScanExportBundle {
+    func makeExportBundle(
+        from pages: [ScannedPage],
+        intelligenceNotes: DocumentIntelligenceNotes? = nil,
+        includesIntelligenceNotes: Bool = false
+    ) throws -> ScanExportBundle {
         guard !pages.isEmpty else {
             throw ExportError.noPages
         }
@@ -54,7 +62,12 @@ final class ScanExportService: ScanExporting {
 
         do {
             try makeMultiPagePDF(from: pages).write(to: pdfURL, options: .atomic)
-            try makeTextFile(from: pages).write(to: textURL, options: .atomic)
+            try makeTextFile(
+                from: pages,
+                intelligenceNotes: intelligenceNotes,
+                includesIntelligenceNotes: includesIntelligenceNotes
+            )
+            .write(to: textURL, options: .atomic)
         } catch {
             try? FileManager.default.removeItem(at: exportDirectory)
             throw error
@@ -86,8 +99,12 @@ final class ScanExportService: ScanExporting {
         }
     }
 
-    private func makeTextFile(from pages: [ScannedPage]) -> Data {
-        let text = pages.enumerated()
+    private func makeTextFile(
+        from pages: [ScannedPage],
+        intelligenceNotes: DocumentIntelligenceNotes?,
+        includesIntelligenceNotes: Bool
+    ) -> Data {
+        var sections = pages.enumerated()
             .map { index, page in
                 let body = page.structuredDocument?.exportText ?? page.recognizedTextBlocks
                     .map(\.text)
@@ -95,7 +112,14 @@ final class ScanExportService: ScanExporting {
 
                 return "Page \(index + 1)\n\(body)"
             }
-            .joined(separator: "\n\n")
+
+        if includesIntelligenceNotes,
+           let intelligenceNotes,
+           !intelligenceNotes.isEmpty {
+            sections.append("Apple Intelligence suggestions\n\(intelligenceNotes.exportText)")
+        }
+
+        let text = sections.joined(separator: "\n\n")
 
         return Data(text.utf8)
     }
