@@ -57,6 +57,8 @@ targets:
       - ToughScan/Processing/ScannedPage.swift
       - ToughScan/Processing/StructuredDocument.swift
       - ToughScan/Processing/StructuredDocumentRecognitionCoordinator.swift
+      - ToughScan/Processing/VisualDocumentRegion.swift
+      - ToughScan/Processing/VisualDocumentRegionDetector.swift
     dependencies:
       - package: ToughScanPackage
         product: ToughScanCore
