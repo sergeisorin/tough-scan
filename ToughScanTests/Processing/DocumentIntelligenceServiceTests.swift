@@ -1,3 +1,4 @@
+import FoundationModels
 import XCTest
 
 final class DocumentIntelligenceServiceTests: XCTestCase {
@@ -57,6 +58,40 @@ final class DocumentIntelligenceServiceTests: XCTestCase {
         XCTAssertTrue(request?.prompt.contains("[Document text was shortened to fit the local model context.]") == true)
         XCTAssertFalse(request?.prompt.contains(String(repeating: "A", count: 80)) == true)
     }
+
+    func testMapsGenerationErrorsToSafeFailures() async {
+        let generator = ThrowingIntelligenceGenerator(
+            error: LanguageModelSession.GenerationError.exceededContextWindowSize(
+                .init(debugDescription: "raw OCR should stay private")
+            )
+        )
+        let service = DocumentIntelligenceService(generator: generator)
+
+        do {
+            _ = try await service.perform(.summarize, sourceText: "Source text")
+            XCTFail("Expected mapped generation failure")
+        } catch DocumentIntelligenceService.Error.generationFailed(let failure) {
+            XCTAssertEqual(failure, .contextTooLong)
+            XCTAssertFalse(failure.message.contains("raw OCR"))
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testFailureMessagesAreNonTechnical() {
+        XCTAssertEqual(
+            DocumentIntelligenceFailure.modelAssetsUnavailable.message,
+            "Apple Intelligence is still preparing. Try again later."
+        )
+        XCTAssertEqual(
+            DocumentIntelligenceFailure.unsupportedLocale.message,
+            "Apple Intelligence is not available for this language or locale."
+        )
+        XCTAssertEqual(
+            DocumentIntelligenceFailure.guardrail.message,
+            "Apple Intelligence could not provide a suggestion for this document."
+        )
+    }
 }
 
 private actor RecordingIntelligenceGenerator: DocumentIntelligenceGenerating {
@@ -70,5 +105,13 @@ private actor RecordingIntelligenceGenerator: DocumentIntelligenceGenerating {
     func generate(instructions: String, prompt: String) async throws -> String {
         lastRequest = (instructions, prompt)
         return response
+    }
+}
+
+private struct ThrowingIntelligenceGenerator: DocumentIntelligenceGenerating {
+    let error: Swift.Error
+
+    func generate(instructions: String, prompt: String) async throws -> String {
+        throw error
     }
 }
