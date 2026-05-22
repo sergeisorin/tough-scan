@@ -109,6 +109,14 @@ Run the core package checks without launching the iOS app:
 swift run ToughScanCoreChecks
 ```
 
+Run the privacy logging guardrails before opening a pull request:
+
+```bash
+swift run ToughScanPrivacyChecks
+```
+
+Do not log document images, OCR text, prompts, generated notes, extracted PII, file URLs containing sensitive data, or raw model/debug errors. During device validation, keep the Xcode console open and confirm raw OCR text and generated notes do not appear in debug logs.
+
 Build the Swift package:
 
 ```bash

@@ -19,6 +19,9 @@ jobs:
       - name: Run core checks
         run: swift run ToughScanCoreChecks
 
+      - name: Run privacy logging checks
+        run: swift run ToughScanPrivacyChecks
+
   ios-build:
     name: iOS app build
     runs-on: macos-latest
