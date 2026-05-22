@@ -13,9 +13,14 @@ struct ScanReviewView: View {
     @State private var exportErrorMessage: String?
     @State private var structuredDocument: StructuredDocument?
     @State private var structuredRecognitionMessage: String?
+    @State private var intelligenceNotes = DocumentIntelligenceNotes()
+    @State private var intelligenceMessage: String?
+    @State private var runningIntelligenceAction: DocumentIntelligenceAction?
+    @State private var includesIntelligenceNotesInExport = false
 
     private let exportService = ScanExportService()
     private let structuredRecognitionService = StructuredDocumentRecognitionService()
+    private let intelligenceService = DocumentIntelligenceService()
 
     var body: some View {
         ScrollView {
@@ -57,6 +62,15 @@ struct ScanReviewView: View {
                     message: structuredRecognitionMessage
                 )
 
+                IntelligenceReviewPanel(
+                    availability: DocumentIntelligenceAvailability.current,
+                    sourceText: documentIntelligenceSource,
+                    notes: intelligenceNotes,
+                    message: intelligenceMessage,
+                    runningAction: runningIntelligenceAction,
+                    onRunAction: runDocumentIntelligence
+                )
+
                 PageSetPanel(
                     pageSet: pageSet,
                     onRemoveCapturedPage: onRemoveCapturedPage
@@ -66,6 +80,12 @@ struct ScanReviewView: View {
                     Text(exportErrorMessage)
                         .font(.caption)
                         .foregroundStyle(.red)
+                }
+
+                if !intelligenceNotes.isEmpty {
+                    Toggle("Include intelligence notes in export", isOn: $includesIntelligenceNotesInExport)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
                 }
 
                 HStack(spacing: 12) {
@@ -97,6 +117,11 @@ struct ScanReviewView: View {
         .task(id: snapshot?.id) {
             await recognizeStructuredDocument()
         }
+        .onChange(of: documentIntelligenceSourceID) { _, _ in
+            intelligenceNotes = DocumentIntelligenceNotes()
+            intelligenceMessage = nil
+            includesIntelligenceNotesInExport = false
+        }
     }
 
     private var currentPage: ScannedPage? {
@@ -105,6 +130,7 @@ struct ScanReviewView: View {
         }
 
         return ScannedPage(
+            id: snapshot.id,
             snapshot: snapshot,
             recognizedTextBlocks: session.recognizedTextBlocks,
             structuredDocument: structuredDocument
@@ -119,9 +145,21 @@ struct ScanReviewView: View {
         ReviewPageSet(capturedPages: capturedPages, currentPage: currentPage)
     }
 
+    private var documentIntelligenceSource: String {
+        ReviewTextSourceBuilder.makeSource(from: pagesForExport)
+    }
+
+    private var documentIntelligenceSourceID: String {
+        documentIntelligenceSource
+    }
+
     private func prepareExport() {
         do {
-            activeExportBundle = try exportService.makeExportBundle(from: pagesForExport)
+            activeExportBundle = try exportService.makeExportBundle(
+                from: pagesForExport,
+                intelligenceNotes: intelligenceNotes,
+                includesIntelligenceNotes: includesIntelligenceNotesInExport
+            )
             exportErrorMessage = nil
         } catch {
             exportErrorMessage = "Could not prepare the local export. Try rescanning the page."
@@ -144,6 +182,43 @@ struct ScanReviewView: View {
         } catch {
             structuredDocument = nil
             structuredRecognitionMessage = "Structured document analysis is unavailable for this scan."
+        }
+    }
+
+    @MainActor
+    private func runDocumentIntelligence(_ action: DocumentIntelligenceAction) {
+        Task {
+            await performDocumentIntelligence(action)
+        }
+    }
+
+    @MainActor
+    private func performDocumentIntelligence(_ action: DocumentIntelligenceAction) async {
+        let sourceID = documentIntelligenceSourceID
+        let sourceText = documentIntelligenceSource
+        runningIntelligenceAction = action
+        intelligenceMessage = "Running \(action.buttonTitle.lowercased()) locally."
+        defer {
+            runningIntelligenceAction = nil
+        }
+
+        do {
+            let result = try await intelligenceService.perform(action, sourceText: sourceText)
+            guard sourceID == documentIntelligenceSourceID else {
+                return
+            }
+            intelligenceNotes = intelligenceNotes.updating(action, result: result)
+            intelligenceMessage = nil
+        } catch DocumentIntelligenceService.Error.emptySource {
+            guard sourceID == documentIntelligenceSourceID else {
+                return
+            }
+            intelligenceMessage = "Scan or add a page with recovered text before using Apple Intelligence."
+        } catch {
+            guard sourceID == documentIntelligenceSourceID else {
+                return
+            }
+            intelligenceMessage = "Apple Intelligence could not finish this action. Try again later."
         }
     }
 }
