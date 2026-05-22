@@ -161,7 +161,7 @@ struct VisualDocumentRegionDetector {
 
         return CGRect(
             x: expanded.x * size.width,
-            y: expanded.y * size.height,
+            y: (1 - expanded.y - expanded.height) * size.height,
             width: expanded.width * size.width,
             height: expanded.height * size.height
         )
