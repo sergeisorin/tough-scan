@@ -53,6 +53,30 @@ final class ReviewTextSourceBuilderTests: XCTestCase {
         XCTAssertEqual(ReviewTextSourceBuilder.makeSource(from: pages), "")
     }
 
+    func testDropsWhitespaceOnlyOCRBlocks() {
+        let pages = [
+            ScannedPage(
+                snapshot: makeSnapshot(),
+                recognizedTextBlocks: [
+                    makeTextBlock("   "),
+                    makeTextBlock("\n\t"),
+                    makeTextBlock("Readable text")
+                ]
+            )
+        ]
+
+        XCTAssertEqual(ReviewTextSourceBuilder.makeSource(from: pages), "Page 1\nReadable text")
+    }
+
+    func testOmitsEmptyPagesWhilePreservingOriginalPageNumbers() {
+        let pages = [
+            ScannedPage(snapshot: makeSnapshot(), recognizedTextBlocks: [makeTextBlock("   ")]),
+            ScannedPage(snapshot: makeSnapshot(), recognizedTextBlocks: [makeTextBlock("שלום readable")])
+        ]
+
+        XCTAssertEqual(ReviewTextSourceBuilder.makeSource(from: pages), "Page 2\nשלום readable")
+    }
+
     func testJoinsMultiplePagesWithBlankLineSeparator() {
         let pages = [
             ScannedPage(snapshot: makeSnapshot(), recognizedTextBlocks: [makeTextBlock("First")]),

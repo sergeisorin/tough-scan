@@ -5,7 +5,6 @@ import UIKit
 
 protocol ScanExporting {
     func makePDF(from image: UIImage, textBlocks: [RecognizedTextBlock]) -> Data
-    func makeTextFile(from textBlocks: [RecognizedTextBlock]) -> Data
     func makeExportBundle(
         from pages: [ScannedPage],
         intelligenceNotes: DocumentIntelligenceNotes?,
@@ -31,14 +30,6 @@ final class ScanExportService: ScanExporting {
             context.beginPage()
             image.draw(in: CGRect(origin: .zero, size: image.size))
         }
-    }
-
-    func makeTextFile(from textBlocks: [RecognizedTextBlock]) -> Data {
-        let text = textBlocks
-            .map(\.text)
-            .joined(separator: "\n")
-
-        return Data(text.utf8)
     }
 
     func makeExportBundle(
@@ -104,14 +95,8 @@ final class ScanExportService: ScanExporting {
         intelligenceNotes: DocumentIntelligenceNotes?,
         includesIntelligenceNotes: Bool
     ) -> Data {
-        var sections = pages.enumerated()
-            .map { index, page in
-                let body = page.structuredDocument?.exportText ?? page.recognizedTextBlocks
-                    .map(\.text)
-                    .joined(separator: "\n")
-
-                return "Page \(index + 1)\n\(body)"
-            }
+        var sections = [ReviewTextSourceBuilder.makeSource(from: pages)]
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 
         if includesIntelligenceNotes,
            let intelligenceNotes,
