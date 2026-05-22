@@ -79,7 +79,8 @@ struct RecomposedDocumentRenderer {
         paragraphStyle.alignment = block.languageCode.contains("he") ? .right : .left
         paragraphStyle.baseWritingDirection = block.languageCode.contains("he") ? .rightToLeft : .leftToRight
 
-        let fontSize = max(8, min(textRect.height * 0.62, 24))
+        let widthFittedFontSize = (textRect.width / CGFloat(max(block.text.count, 1))) * 1.8
+        let fontSize = max(5, min(textRect.height * 0.62, widthFittedFontSize, 24))
         let attributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: fontSize),
             .foregroundColor: UIColor.black,
