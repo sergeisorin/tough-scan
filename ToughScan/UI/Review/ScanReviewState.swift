@@ -8,8 +8,6 @@ struct ScanReviewState {
     let visualRegionDetectionCoordinator: VisualDocumentRegionDetectionCoordinator
     let selectedExportMode: ScanExportMode
 
-    private let recomposedDocumentRenderer = RecomposedDocumentRenderer()
-
     var currentPage: ScannedPage? {
         guard let snapshot else {
             return nil
@@ -72,33 +70,19 @@ struct ScanReviewState {
         !pagesForExport.isEmpty && recoveredTextSummary.isEmpty
     }
 
+    var exportModeAvailability: ScanExportModeAvailability {
+        ScanExportModeAvailability(selectedMode: selectedExportMode, pages: pagesForExport)
+    }
+
     var recomposedEligiblePageCount: Int {
-        pagesForExport.filter { recomposedDocumentRenderer.isEligibleForRecomposition($0) }.count
+        exportModeAvailability.recomposedEligiblePageCount
     }
 
     var isSelectedExportModeUnavailable: Bool {
-        selectedExportMode == .recomposedPDFWithVisualMarks &&
-            recomposedEligiblePageCount == 0
+        exportModeAvailability.isSelectedModeUnavailable
     }
 
     var exportModeMessage: String {
-        switch selectedExportMode {
-        case .originalImagePDF:
-            return "Default. Preserves the recovered page image exactly as reviewed."
-        case .recomposedPDFWithVisualMarks:
-            guard !pagesForExport.isEmpty else {
-                return "Cleaned/recomposed export becomes available after a page is ready."
-            }
-
-            guard recomposedEligiblePageCount > 0 else {
-                return "Cleaned/recomposed export needs positioned OCR text. Use original-image PDF for this scan."
-            }
-
-            if recomposedEligiblePageCount < pagesForExport.count {
-                return "Eligible pages will be recomposed; pages without positioned text will fall back to original-image PDF."
-            }
-
-            return "Experimental. Rebuilds text on a white page and overlays detected visual marks."
-        }
+        exportModeAvailability.message
     }
 }
