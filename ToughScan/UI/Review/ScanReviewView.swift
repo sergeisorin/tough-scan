@@ -22,7 +22,7 @@ struct ScanReviewView: View {
 
     private let exportService = ScanExportService()
     private let structuredRecognitionService: any StructuredDocumentRecognizing
-    private let visualRegionDetector = VisualDocumentRegionDetector()
+    private let visualRegionDetectionService: VisualDocumentRegionDetectionService
     private let intelligenceService = DocumentIntelligenceService()
     private let intelligenceAvailabilityProvider: any DocumentIntelligenceAvailabilityProviding
     private let recoveredTextCopyController: RecoveredTextCopyController
@@ -36,7 +36,8 @@ struct ScanReviewView: View {
         onRescan: @escaping () -> Void,
         intelligenceAvailabilityProvider: any DocumentIntelligenceAvailabilityProviding = SystemDocumentIntelligenceAvailabilityProvider(),
         recoveredTextCopyController: RecoveredTextCopyController = RecoveredTextCopyController(),
-        structuredRecognitionService: any StructuredDocumentRecognizing = StructuredDocumentRecognitionService()
+        structuredRecognitionService: any StructuredDocumentRecognizing = StructuredDocumentRecognitionService(),
+        visualRegionDetectionService: VisualDocumentRegionDetectionService = VisualDocumentRegionDetectionService()
     ) {
         self.session = session
         self.snapshot = snapshot
@@ -47,6 +48,7 @@ struct ScanReviewView: View {
         self.intelligenceAvailabilityProvider = intelligenceAvailabilityProvider
         self.recoveredTextCopyController = recoveredTextCopyController
         self.structuredRecognitionService = structuredRecognitionService
+        self.visualRegionDetectionService = visualRegionDetectionService
     }
 
     var body: some View {
@@ -301,7 +303,7 @@ struct ScanReviewView: View {
         }
 
         let request = visualRegionDetectionCoordinator.begin(snapshotID: snapshot.id)
-        let regions = visualRegionDetector.detectVisualRegions(
+        let regions = await visualRegionDetectionService.detectVisualRegions(
             in: snapshot.image,
             textBlocks: session.recognizedTextBlocks
         )
