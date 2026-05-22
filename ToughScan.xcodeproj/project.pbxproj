@@ -39,6 +39,7 @@
 		6F0AB09F2DB13F3E50B4427A /* ScanExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA34A48C82867A0735120BB /* ScanExportService.swift */; };
 		7E7801DB77FB50F9496A20B7 /* IntelligenceReviewPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23C0730A9DD3C2ED6C3E4544 /* IntelligenceReviewPanel.swift */; };
 		85DA3063F4F1B223AA0A1E3C /* RecoveredTextCopyController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51694339A9D9333FB18A8BCE /* RecoveredTextCopyController.swift */; };
+		8B31AC418F9A4F25F9A6BADA /* CaptureScoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5E9D0A88CD588369CF43498 /* CaptureScoring.swift */; };
 		8EF7DA9581DDB66B9B71A56E /* ScannedPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7749FCCACE9535C80BBA6BB7 /* ScannedPage.swift */; };
 		9093CC2976516591AC0BBA89 /* TextRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA96750E73F93C6D18B4136 /* TextRecognitionService.swift */; };
 		92EFE5D6437977CA41568DC6 /* ToughScanCore in Frameworks */ = {isa = PBXBuildFile; productRef = 14FD30A2EF9A3CDA810FF52F /* ToughScanCore */; };
@@ -83,6 +84,7 @@
 		EEC9D6FF89A4E4BF071D78A2 /* ScanMessageCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7270EF3287099636B9F183 /* ScanMessageCoordinator.swift */; };
 		F4015C72A01CF9EF9687C3B5 /* ScanMessageCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C047E1B0FC37B194800C7512 /* ScanMessageCoordinatorTests.swift */; };
 		F4B14E130677B0B0EC014FAF /* DocumentIntelligenceRunCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B658E6FAF45A224B43D60AE /* DocumentIntelligenceRunCoordinatorTests.swift */; };
+		F912C5E54F1BF7033AD49086 /* CaptureScoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5E9D0A88CD588369CF43498 /* CaptureScoring.swift */; };
 		F91918074E366091B85C36C5 /* DocumentIntelligenceRunCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 875FFD2EA1C8AB6F0E34CDDA /* DocumentIntelligenceRunCoordinator.swift */; };
 		FD8D89EEA9734C917220A601 /* ScanReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAC81862EDA5A2DC5BDDB1BE /* ScanReviewView.swift */; };
 		FEBF74C90CDDD0409375420B /* ScanExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA34A48C82867A0735120BB /* ScanExportService.swift */; };
@@ -144,6 +146,7 @@
 		C047E1B0FC37B194800C7512 /* ScanMessageCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanMessageCoordinatorTests.swift; sourceTree = "<group>"; };
 		C145B6DE6173286F9BF2F107 /* ConfidenceGridOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidenceGridOverlay.swift; sourceTree = "<group>"; };
 		CCAB6EA7094728C07B788253 /* ScanAutomationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanAutomationController.swift; sourceTree = "<group>"; };
+		D5E9D0A88CD588369CF43498 /* CaptureScoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureScoring.swift; sourceTree = "<group>"; };
 		DD2BB3E170AE881062874D0D /* DocumentDetectionGeometryMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentDetectionGeometryMapper.swift; sourceTree = "<group>"; };
 		DEA34A48C82867A0735120BB /* ScanExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanExportService.swift; sourceTree = "<group>"; };
 		E0784D7BCE7E9B827A482442 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -192,6 +195,7 @@
 		251F2899A1D5A317B73D4380 /* Processing */ = {
 			isa = PBXGroup;
 			children = (
+				D5E9D0A88CD588369CF43498 /* CaptureScoring.swift */,
 				DD2BB3E170AE881062874D0D /* DocumentDetectionGeometryMapper.swift */,
 				21E69B44A8CCA88040658FC0 /* DocumentDetectionService.swift */,
 				59034C39C22FA554C351EB30 /* DocumentIntelligenceAvailability.swift */,
@@ -448,6 +452,7 @@
 				9B9F8B04FB89E9CA12BFF8FF /* CameraControlState.swift in Sources */,
 				C37EDDE0EA97A55BDB8FBE92 /* CameraPreviewView.swift in Sources */,
 				612A0AE6390D8C680EF95BA8 /* CameraSessionController.swift in Sources */,
+				8B31AC418F9A4F25F9A6BADA /* CaptureScoring.swift in Sources */,
 				5E4EF76E9FE10CC31E4C0554 /* ConfidenceGridOverlay.swift in Sources */,
 				DCBB5B83BB27626A0AC43E28 /* ConfidenceStateStyle.swift in Sources */,
 				B1887BA42AFAC7D3123ABB68 /* DocumentDetectionGeometryMapper.swift in Sources */,
@@ -493,6 +498,7 @@
 			files = (
 				5DD361B545CF6A7BA6499E92 /* CameraControlState.swift in Sources */,
 				BD390354DE2ABAC55EDB0FFD /* CameraControlStateTests.swift in Sources */,
+				F912C5E54F1BF7033AD49086 /* CaptureScoring.swift in Sources */,
 				B119E0629A3689E66ED297DF /* DocumentDetectionGeometryMapper.swift in Sources */,
 				02CA84D7543255C2C03CD422 /* DocumentDetectionGeometryMapperTests.swift in Sources */,
 				DC22472FBFC8B108A117E1B1 /* DocumentIntelligenceAvailability.swift in Sources */,

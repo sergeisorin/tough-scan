@@ -104,6 +104,47 @@ final class FrameQualityAnalyzerTests: XCTestCase {
         XCTAssertLessThan(smudged.captureScore, clean.captureScore)
     }
 
+    func testDefaultCaptureQualityScoringMatchesCurrentWeights() {
+        let scoring = CaptureQualityScoring.default
+        let metrics = FrameQualityMetrics(
+            brightness: 0.62,
+            contrast: 0.7,
+            sharpness: 0.6,
+            glareRisk: 0.1,
+            documentCoverage: 0.8,
+            geometryConfidence: 0.9,
+            lensSmudgeConfidence: 0.2
+        )
+
+        XCTAssertEqual(scoring.targetBrightness, 0.62, accuracy: 0.001)
+        XCTAssertEqual(scoring.exposureWeight, 0.30, accuracy: 0.001)
+        XCTAssertEqual(scoring.contrastWeight, 0.35, accuracy: 0.001)
+        XCTAssertEqual(scoring.sharpnessWeight, 0.35, accuracy: 0.001)
+        XCTAssertEqual(scoring.documentCoverageWeight, 0.15, accuracy: 0.001)
+        XCTAssertEqual(scoring.geometryConfidenceWeight, 0.15, accuracy: 0.001)
+        XCTAssertEqual(scoring.glarePenaltyWeight, 0.45, accuracy: 0.001)
+        XCTAssertEqual(scoring.lensSmudgePenaltyWeight, 0.50, accuracy: 0.001)
+        XCTAssertEqual(scoring.captureScore(for: metrics), 0.865, accuracy: 0.001)
+        XCTAssertEqual(metrics.captureScore, scoring.captureScore(for: metrics), accuracy: 0.001)
+    }
+
+    func testDefaultDocumentSnapshotScoringMatchesCurrentWeights() {
+        let scoring = DocumentSnapshotScoring.default
+
+        XCTAssertEqual(scoring.frameQualityWeight, 0.55, accuracy: 0.001)
+        XCTAssertEqual(scoring.ocrConfidenceWeight, 0.30, accuracy: 0.001)
+        XCTAssertEqual(scoring.textCoverageWeight, 0.15, accuracy: 0.001)
+        XCTAssertEqual(
+            scoring.captureScore(
+                frameQualityScore: 0.8,
+                averageOCRConfidence: 0.7,
+                averageTextCoverage: 0.5
+            ),
+            0.725,
+            accuracy: 0.001
+        )
+    }
+
     private func makeSolidImage(white: CGFloat) -> CIImage {
         let color = UIColor(white: white, alpha: 1)
         return UIGraphicsImageRenderer(size: CGSize(width: 96, height: 96)).image { context in
