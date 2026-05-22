@@ -55,6 +55,7 @@ targets:
       - ToughScan/Processing/ScanMessageCoordinator.swift
       - ToughScan/Processing/ScannedPage.swift
       - ToughScan/Processing/StructuredDocument.swift
+      - ToughScan/Processing/StructuredDocumentRecognitionCoordinator.swift
     dependencies:
       - package: ToughScanPackage
         product: ToughScanCore
