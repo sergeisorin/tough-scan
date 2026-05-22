@@ -14,6 +14,31 @@ final class RecoveredTextCopyControllerTests: XCTestCase {
         XCTAssertEqual(clipboard.copiedText, "Page 2\nCopy this")
     }
 
+    func testCopyRecoveredTextResultDescribesCopiedSource() {
+        let clipboard = SpyClipboard()
+        let controller = RecoveredTextCopyController(clipboard: clipboard)
+        let pages = [
+            ScannedPage(
+                snapshot: makeSnapshot(),
+                recognizedTextBlocks: [makeTextBlock("Raw OCR")],
+                structuredDocument: StructuredDocument(
+                    paragraphs: ["Structured text"],
+                    tables: [],
+                    lists: [],
+                    barcodes: []
+                )
+            ),
+            ScannedPage(snapshot: makeSnapshot(), recognizedTextBlocks: [makeTextBlock("OCR text")])
+        ]
+
+        let result = controller.copyRecoveredTextResult(from: pages)
+
+        XCTAssertTrue(result.didCopy)
+        XCTAssertEqual(result.message, "Copied structured and OCR text from 2 pages.")
+        XCTAssertEqual(result.summary.copyablePageCount, 2)
+        XCTAssertEqual(clipboard.copiedText, "Page 1\nStructured text\n\nPage 2\nOCR text")
+    }
+
     func testCopyRecoveredTextRejectsEmptySource() {
         let clipboard = SpyClipboard()
         let controller = RecoveredTextCopyController(clipboard: clipboard)
@@ -22,6 +47,21 @@ final class RecoveredTextCopyControllerTests: XCTestCase {
         ]
 
         XCTAssertFalse(controller.copyRecoveredText(from: pages))
+        XCTAssertNil(clipboard.copiedText)
+    }
+
+    func testCopyRecoveredTextResultExplainsEmptySource() {
+        let clipboard = SpyClipboard()
+        let controller = RecoveredTextCopyController(clipboard: clipboard)
+        let pages = [
+            ScannedPage(snapshot: makeSnapshot(), recognizedTextBlocks: [makeTextBlock("\n\t")])
+        ]
+
+        let result = controller.copyRecoveredTextResult(from: pages)
+
+        XCTAssertFalse(result.didCopy)
+        XCTAssertEqual(result.message, "No recovered text is ready to copy yet.")
+        XCTAssertTrue(result.summary.isEmpty)
         XCTAssertNil(clipboard.copiedText)
     }
 
