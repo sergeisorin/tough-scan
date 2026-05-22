@@ -26,6 +26,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Select Xcode with iOS 26 SDK
+        run: |
+          XCODE_DEVELOPER_DIR=$(python3 - <<'PY'
+          import glob
+          import os
+          import sys
+
+          candidates = []
+          for app_path in glob.glob("/Applications/Xcode*.app"):
+              sdk_dir = os.path.join(
+                  app_path,
+                  "Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs"
+              )
+              if glob.glob(os.path.join(sdk_dir, "iPhoneSimulator26*.sdk")):
+                  candidates.append(app_path)
+
+          if not candidates:
+              sys.exit("No installed Xcode has an iOS 26 simulator SDK")
+
+          print(os.path.join(sorted(candidates)[-1], "Contents/Developer"))
+          PY
+          )
+          sudo xcode-select -s "$XCODE_DEVELOPER_DIR"
+          xcodebuild -version
+          xcrun --sdk iphonesimulator --show-sdk-version
+
       - name: Install XcodeGen
         run: brew install xcodegen
 
