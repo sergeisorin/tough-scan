@@ -159,12 +159,7 @@ struct VisualDocumentRegionDetector {
             height: min(1, rect.height + (textBoxExpansion * 2))
         )
 
-        return CGRect(
-            x: expanded.x * size.width,
-            y: (1 - expanded.y - expanded.height) * size.height,
-            width: expanded.width * size.width,
-            height: expanded.height * size.height
-        )
+        return expanded.pixelRect(in: size, from: .visionBottomLeft)
     }
 }
 
