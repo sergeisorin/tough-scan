@@ -78,6 +78,52 @@ final class ScanExportServiceTests: XCTestCase {
         XCTAssertFalse(text.contains("Raw OCR fallback"))
     }
 
+    func testMakeExportBundleExcludesIntelligenceNotesByDefault() throws {
+        let service = ScanExportService()
+        let notes = DocumentIntelligenceNotes(summary: "AI summary")
+
+        let bundle = try service.makeExportBundle(
+            from: [makePage(text: "Original text", size: CGSize(width: 120, height: 180))],
+            intelligenceNotes: notes
+        )
+        defer {
+            bundle.cleanup()
+        }
+
+        let textURL = try XCTUnwrap(bundle.fileURLs.first { $0.pathExtension == "txt" })
+        let text = try String(contentsOf: textURL, encoding: .utf8)
+
+        XCTAssertTrue(text.contains("Original text"))
+        XCTAssertFalse(text.contains("AI summary"))
+    }
+
+    func testMakeExportBundleIncludesIntelligenceNotesWhenRequested() throws {
+        let service = ScanExportService()
+        let notes = DocumentIntelligenceNotes(
+            summary: "AI summary",
+            keyDetails: "Names: Ari",
+            cleanedTextSuggestion: "Clean text"
+        )
+
+        let bundle = try service.makeExportBundle(
+            from: [makePage(text: "Original text", size: CGSize(width: 120, height: 180))],
+            intelligenceNotes: notes,
+            includesIntelligenceNotes: true
+        )
+        defer {
+            bundle.cleanup()
+        }
+
+        let textURL = try XCTUnwrap(bundle.fileURLs.first { $0.pathExtension == "txt" })
+        let text = try String(contentsOf: textURL, encoding: .utf8)
+
+        XCTAssertTrue(text.contains("Original text"))
+        XCTAssertTrue(text.contains("Apple Intelligence suggestions"))
+        XCTAssertTrue(text.contains("AI summary"))
+        XCTAssertTrue(text.contains("Names: Ari"))
+        XCTAssertTrue(text.contains("Clean text"))
+    }
+
     private func makePage(text: String, size: CGSize) -> ScannedPage {
         ScannedPage(
             snapshot: DocumentSnapshot(

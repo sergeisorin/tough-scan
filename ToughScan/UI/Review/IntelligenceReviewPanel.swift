@@ -1,0 +1,117 @@
+import SwiftUI
+
+struct IntelligenceReviewPanel: View {
+    let availability: DocumentIntelligenceAvailability
+    let sourceText: String
+    let notes: DocumentIntelligenceNotes
+    let message: String?
+    let runningAction: DocumentIntelligenceAction?
+    let onRunAction: (DocumentIntelligenceAction) -> Void
+
+    private var canRunActions: Bool {
+        availability.canGenerate && !sourceText.isEmpty && runningAction == nil
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Apple Intelligence suggestions")
+                    .font(.headline)
+                Text("These local suggestions are advisory. They do not replace recovered OCR or structured document text.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            if !availability.canGenerate {
+                availabilityMessage
+            } else if sourceText.isEmpty {
+                Text("Scan or add a page with recovered text before using Apple Intelligence.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                actionButtons
+            }
+
+            if let message {
+                Text(message)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            if notes.isEmpty {
+                Text("Run an action to generate notes for this review.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                generatedNotes
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    private var availabilityMessage: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(availability.title)
+                .font(.subheadline.weight(.semibold))
+            Text(availability.message)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var actionButtons: some View {
+        HStack(spacing: 10) {
+            ForEach(DocumentIntelligenceAction.allCases, id: \.self) { action in
+                Button {
+                    onRunAction(action)
+                } label: {
+                    if runningAction == action {
+                        ProgressView()
+                    } else {
+                        Text(action.buttonTitle)
+                    }
+                }
+                .buttonStyle(.bordered)
+                .disabled(!canRunActions)
+            }
+        }
+    }
+
+    private var generatedNotes: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if let summary = notes.summary {
+                GeneratedNoteSection(title: DocumentIntelligenceAction.summarize.title, text: summary)
+            }
+
+            if let keyDetails = notes.keyDetails {
+                GeneratedNoteSection(title: DocumentIntelligenceAction.extractKeyDetails.title, text: keyDetails)
+            }
+
+            if let cleanedTextSuggestion = notes.cleanedTextSuggestion {
+                GeneratedNoteSection(title: DocumentIntelligenceAction.suggestCleanedText.title, text: cleanedTextSuggestion)
+            }
+        }
+    }
+}
+
+private struct GeneratedNoteSection: View {
+    let title: String
+    let text: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+            Text(text)
+                .font(.body)
+                .textSelection(.enabled)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .tertiarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+}
