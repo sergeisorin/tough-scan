@@ -195,8 +195,11 @@ final class ScanFrameProcessor: CameraFrameConsumer {
         let ocrConfidence = averageOCRConfidence(in: regions)
         let textCoverage = averageTextCoverage(in: tileEvidence)
 
-        return ((qualityMetrics.captureScore * 0.55) + (ocrConfidence * 0.30) + (textCoverage * 0.15))
-            .clampedToUnitRange
+        return DocumentSnapshotScoring.default.captureScore(
+            frameQualityScore: qualityMetrics.captureScore,
+            averageOCRConfidence: ocrConfidence,
+            averageTextCoverage: textCoverage
+        )
     }
 
     private func averageOCRConfidence(in regions: [NormalizedTextRegion]) -> Double {

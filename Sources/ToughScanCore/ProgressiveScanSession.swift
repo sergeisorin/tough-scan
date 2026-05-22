@@ -1,12 +1,16 @@
 public struct ProgressiveScanSession: Equatable, Sendable {
-    private static let minimumVisualQualityForBlankRegion = 0.65
-
     public private(set) var confidenceMap: TileConfidenceMap
     public private(set) var recognizedTextBlocks: [RecognizedTextBlock]
+    private let readinessThresholds: ScanReadinessThresholds
 
-    public init(gridWidth: Int, gridHeight: Int) {
+    public init(
+        gridWidth: Int,
+        gridHeight: Int,
+        readinessThresholds: ScanReadinessThresholds = .default
+    ) {
         self.confidenceMap = TileConfidenceMap(width: gridWidth, height: gridHeight)
         self.recognizedTextBlocks = []
+        self.readinessThresholds = readinessThresholds
     }
 
     public var isReadyForReview: Bool {
@@ -78,7 +82,7 @@ public struct ProgressiveScanSession: Equatable, Sendable {
 
     private func isMissing(_ tile: ScanTile) -> Bool {
         tile.state == .needsScan ||
-            (isBlankRegion(tile) && tile.visualQuality < Self.minimumVisualQualityForBlankRegion)
+            (isBlankRegion(tile) && tile.visualQuality < readinessThresholds.minimumVisualQualityForBlankRegion)
     }
 
     private func isWeakText(_ tile: ScanTile) -> Bool {
@@ -86,7 +90,7 @@ public struct ProgressiveScanSession: Equatable, Sendable {
     }
 
     private func isVisuallyCoveredBlankRegion(_ tile: ScanTile) -> Bool {
-        isBlankRegion(tile) && tile.visualQuality >= Self.minimumVisualQualityForBlankRegion
+        isBlankRegion(tile) && tile.visualQuality >= readinessThresholds.minimumVisualQualityForBlankRegion
     }
 
     private func isBlankRegion(_ tile: ScanTile) -> Bool {
