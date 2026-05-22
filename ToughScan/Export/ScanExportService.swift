@@ -8,8 +8,25 @@ protocol ScanExporting {
     func makeExportBundle(
         from pages: [ScannedPage],
         intelligenceNotes: DocumentIntelligenceNotes?,
-        includesIntelligenceNotes: Bool
+        includesIntelligenceNotes: Bool,
+        exportMode: ScanExportMode
     ) throws -> ScanExportBundle
+}
+
+enum ScanExportMode: String, CaseIterable, Identifiable {
+    case originalImagePDF
+    case recomposedPDFWithVisualMarks
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .originalImagePDF:
+            return "Original image PDF"
+        case .recomposedPDFWithVisualMarks:
+            return "Cleaned PDF with visual marks"
+        }
+    }
 }
 
 protocol ExportDataWriting {
@@ -30,15 +47,18 @@ final class ScanExportService: ScanExporting {
     private let temporaryDirectory: URL
     private let fileManager: FileManager
     private let dataWriter: ExportDataWriting
+    private let recomposedDocumentRenderer: RecomposedDocumentRenderer
 
     init(
         temporaryDirectory: URL = FileManager.default.temporaryDirectory,
         fileManager: FileManager = .default,
-        dataWriter: ExportDataWriting = AtomicExportDataWriter()
+        dataWriter: ExportDataWriting = AtomicExportDataWriter(),
+        recomposedDocumentRenderer: RecomposedDocumentRenderer = RecomposedDocumentRenderer()
     ) {
         self.temporaryDirectory = temporaryDirectory
         self.fileManager = fileManager
         self.dataWriter = dataWriter
+        self.recomposedDocumentRenderer = recomposedDocumentRenderer
     }
 
     func makePDF(from image: UIImage, textBlocks: [RecognizedTextBlock]) -> Data {
@@ -59,7 +79,8 @@ final class ScanExportService: ScanExporting {
     func makeExportBundle(
         from pages: [ScannedPage],
         intelligenceNotes: DocumentIntelligenceNotes? = nil,
-        includesIntelligenceNotes: Bool = false
+        includesIntelligenceNotes: Bool = false,
+        exportMode: ScanExportMode = .originalImagePDF
     ) throws -> ScanExportBundle {
         guard !pages.isEmpty else {
             throw ExportError.noPages
@@ -76,7 +97,7 @@ final class ScanExportService: ScanExporting {
         let textURL = exportDirectory.appendingPathComponent("tough-scan-text.txt")
 
         do {
-            try dataWriter.write(makeMultiPagePDF(from: pages), to: pdfURL)
+            try dataWriter.write(makeMultiPagePDF(from: pages, exportMode: exportMode), to: pdfURL)
             try dataWriter.write(
                 makeTextFile(
                     from: pages,
@@ -93,7 +114,11 @@ final class ScanExportService: ScanExporting {
         return ScanExportBundle(directoryURL: exportDirectory, fileURLs: [pdfURL, textURL])
     }
 
-    private func makeMultiPagePDF(from pages: [ScannedPage]) -> Data {
+    private func makeMultiPagePDF(from pages: [ScannedPage], exportMode: ScanExportMode) -> Data {
+        guard exportMode == .originalImagePDF else {
+            return recomposedDocumentRenderer.makePDF(from: pages).data
+        }
+
         let firstPageSize = pages.first?.snapshot.image.size ?? CGSize(width: 612, height: 792)
         let format = UIGraphicsPDFRendererFormat()
         let metadata = [
