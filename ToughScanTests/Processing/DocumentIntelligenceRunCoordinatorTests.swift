@@ -55,9 +55,34 @@ final class DocumentIntelligenceRunCoordinatorTests: XCTestCase {
 
         XCTAssertNil(coordinator.begin(action: .summarize, sourceText: " \n ", availability: .available))
         XCTAssertEqual(coordinator.state, .emptySource(.summarize))
+        XCTAssertEqual(
+            coordinator.state.statusMessage(for: .summarize),
+            "AI-assisted review needs recovered text first. Rescan weak areas or add a page before running this action."
+        )
 
         XCTAssertNil(coordinator.begin(action: .summarize, sourceText: "Text", availability: .modelNotReady))
         XCTAssertEqual(coordinator.state, .unavailable(.modelNotReady))
+    }
+
+    func testUnavailableStatesDoNotCreateRequests() {
+        let unavailableStates: [DocumentIntelligenceAvailability] = [
+            .deviceNotEligible,
+            .appleIntelligenceNotEnabled,
+            .modelNotReady,
+            .unsupportedLocale,
+            .unknown
+        ]
+
+        for availability in unavailableStates {
+            var coordinator = DocumentIntelligenceRunCoordinator()
+
+            XCTAssertNil(coordinator.begin(
+                action: .extractKeyDetails,
+                sourceText: "Recovered text",
+                availability: availability
+            ))
+            XCTAssertEqual(coordinator.state, .unavailable(availability))
+        }
     }
 
     func testFailureAllowsRetryForSameAction() throws {
