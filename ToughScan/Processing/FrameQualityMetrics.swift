@@ -14,14 +14,7 @@ struct FrameQualityMetrics: Equatable {
     }
 
     var captureScore: Double {
-        let exposureScore = 1 - min(abs(brightness - 0.62) / 0.62, 1)
-        let detailScore = (contrast * 0.35) + (sharpness * 0.35)
-        let documentScore = (documentCoverage * 0.15) + (geometryConfidence * 0.15)
-        let glarePenalty = glareRisk * 0.45
-        let smudgePenalty = lensSmudgeConfidence * 0.50
-
-        return (exposureScore * 0.30 + detailScore + documentScore - glarePenalty - smudgePenalty)
-            .clampedToUnitRange
+        CaptureQualityScoring.default.captureScore(for: self)
     }
 
     init(

@@ -4,6 +4,8 @@ import ToughScanCore
 struct ToughScanCoreChecks {
     static func main() {
         testTileStateUsesCombinedVisualAndOCRConfidence()
+        testDefaultTileConfidenceScoringMatchesCurrentWeights()
+        testDefaultReadinessThresholdMatchesCurrentBoundary()
         testWeakestTilesAreRankedWithNeedsScanFirst()
         testUpdatingTileKeepsTheStrongerObservation()
         testSessionStartsWithAllTilesNeedingScan()
@@ -22,6 +24,10 @@ struct ToughScanCoreChecks {
         testMappingAggregatesTileEvidence()
         testVisualCoverageEvidenceIsMappedForBlankTiles()
         testVisuallyCoveredBlankTilesDoNotBlockReview()
+        testBlankTileAtVisualReadinessThresholdAllowsReview()
+        testBlankTileBelowVisualReadinessThresholdBlocksReview()
+        testTextBearingVeryUncertainTileBlocksReview()
+        testUncertainAndSuccessfulTilesAllowReview()
         testValidDocumentQuadIsAccepted()
         testTinyDocumentQuadIsRejected()
         testGeometryStabilizerSmoothsSmallMovement()
@@ -43,6 +49,28 @@ private func testTileStateUsesCombinedVisualAndOCRConfidence() {
     )
 
     expect(map.tile(at: coordinate).state == .successful)
+}
+
+private func testDefaultTileConfidenceScoringMatchesCurrentWeights() {
+    let scoring = TileConfidenceScoring.default
+    let tile = ScanTile(
+        coordinate: TileCoordinate(column: 0, row: 0),
+        visualQuality: 0.80,
+        ocrConfidence: 0.70,
+        textCoverage: 0.50
+    )
+
+    expect(isClose(scoring.visualQualityWeight, 0.45))
+    expect(isClose(scoring.ocrConfidenceWeight, 0.40))
+    expect(isClose(scoring.textCoverageWeight, 0.15))
+    expect(isClose(scoring.combinedConfidence(for: tile), 0.715))
+    expect(isClose(tile.combinedConfidence, scoring.combinedConfidence(for: tile)))
+}
+
+private func testDefaultReadinessThresholdMatchesCurrentBoundary() {
+    let thresholds = ScanReadinessThresholds.default
+
+    expect(isClose(thresholds.minimumVisualQualityForBlankRegion, 0.65))
 }
 
 private func testWeakestTilesAreRankedWithNeedsScanFirst() {
@@ -481,6 +509,112 @@ private func testVisuallyCoveredBlankTilesDoNotBlockReview() {
     expect(session.isReadyForReview)
     expect(guidance.action == .readyForReview)
     expect(guidance.targetTile == nil)
+}
+
+private func testBlankTileAtVisualReadinessThresholdAllowsReview() {
+    var session = ProgressiveScanSession(gridWidth: 1, gridHeight: 1)
+
+    session.addFrame(
+        FrameObservation(
+            id: "frame-1",
+            tileEvidence: [
+                TileEvidence(
+                    coordinate: TileCoordinate(column: 0, row: 0),
+                    visualQuality: 0.65,
+                    ocrConfidence: 0,
+                    textCoverage: 0
+                )
+            ],
+            recognizedTextBlocks: []
+        )
+    )
+
+    let guidance = session.scanGuidance()
+
+    expect(session.isReadyForReview)
+    expect(guidance.action == .readyForReview)
+}
+
+private func testBlankTileBelowVisualReadinessThresholdBlocksReview() {
+    var session = ProgressiveScanSession(gridWidth: 1, gridHeight: 1)
+
+    session.addFrame(
+        FrameObservation(
+            id: "frame-1",
+            tileEvidence: [
+                TileEvidence(
+                    coordinate: TileCoordinate(column: 0, row: 0),
+                    visualQuality: 0.64,
+                    ocrConfidence: 0,
+                    textCoverage: 0
+                )
+            ],
+            recognizedTextBlocks: []
+        )
+    )
+
+    let guidance = session.scanGuidance()
+
+    expect(!session.isReadyForReview)
+    expect(guidance.action == .scanMissingRegion)
+    expect(guidance.targetTile?.coordinate == TileCoordinate(column: 0, row: 0))
+}
+
+private func testTextBearingVeryUncertainTileBlocksReview() {
+    var session = ProgressiveScanSession(gridWidth: 1, gridHeight: 1)
+
+    session.addFrame(
+        FrameObservation(
+            id: "frame-1",
+            tileEvidence: [
+                TileEvidence(
+                    coordinate: TileCoordinate(column: 0, row: 0),
+                    visualQuality: 0.30,
+                    ocrConfidence: 0.30,
+                    textCoverage: 0.20
+                )
+            ],
+            recognizedTextBlocks: []
+        )
+    )
+
+    let guidance = session.scanGuidance()
+
+    expect(!session.isReadyForReview)
+    expect(guidance.action == .rescanWeakText)
+    expect(guidance.targetTile?.coordinate == TileCoordinate(column: 0, row: 0))
+}
+
+private func testUncertainAndSuccessfulTilesAllowReview() {
+    var session = ProgressiveScanSession(gridWidth: 2, gridHeight: 1)
+
+    session.addFrame(
+        FrameObservation(
+            id: "frame-1",
+            tileEvidence: [
+                TileEvidence(
+                    coordinate: TileCoordinate(column: 0, row: 0),
+                    visualQuality: 0.62,
+                    ocrConfidence: 0.56,
+                    textCoverage: 0.42
+                ),
+                TileEvidence(
+                    coordinate: TileCoordinate(column: 1, row: 0),
+                    visualQuality: 0.82,
+                    ocrConfidence: 0.76,
+                    textCoverage: 0.62
+                )
+            ],
+            recognizedTextBlocks: []
+        )
+    )
+
+    let guidance = session.scanGuidance()
+
+    expect(session.confidenceMap.tile(at: TileCoordinate(column: 0, row: 0)).state == .uncertain)
+    expect(session.confidenceMap.tile(at: TileCoordinate(column: 1, row: 0)).state == .successful)
+    expect(session.isReadyForReview)
+    expect(guidance.action == .readyForReview)
 }
 
 private func testValidDocumentQuadIsAccepted() {

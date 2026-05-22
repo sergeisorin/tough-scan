@@ -5,7 +5,7 @@ public struct ScanTile: Equatable, Sendable {
     public let textCoverage: Double
 
     public var combinedConfidence: Double {
-        (visualQuality * 0.45) + (ocrConfidence * 0.40) + (textCoverage * 0.15)
+        TileConfidenceScoring.default.combinedConfidence(for: self)
     }
 
     public var state: ScanConfidenceState {
