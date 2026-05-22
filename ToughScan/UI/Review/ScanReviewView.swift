@@ -5,7 +5,7 @@ struct ScanReviewView: View {
     let session: ProgressiveScanSession
     let snapshot: DocumentSnapshot?
     let capturedPages: [ScannedPage]
-    let onAddPage: (StructuredDocument?) -> Void
+    let onAddPage: (StructuredDocument?, [VisualDocumentRegion]) -> Void
     let onRemoveCapturedPage: (ScannedPage.ID) -> Void
     let onRescan: () -> Void
 
@@ -14,6 +14,7 @@ struct ScanReviewView: View {
     @State private var activeExportBundle: ScanExportBundle?
     @State private var exportErrorMessage: String?
     @State private var structuredRecognitionCoordinator = StructuredDocumentRecognitionCoordinator()
+    @State private var visualRegionDetectionCoordinator = VisualDocumentRegionDetectionCoordinator()
     @State private var documentIntelligenceAvailability: DocumentIntelligenceAvailability = .unknown
     @State private var intelligenceRunCoordinator = DocumentIntelligenceRunCoordinator()
     @State private var includesIntelligenceNotesInExport = false
@@ -21,6 +22,7 @@ struct ScanReviewView: View {
 
     private let exportService = ScanExportService()
     private let structuredRecognitionService: any StructuredDocumentRecognizing
+    private let visualRegionDetector = VisualDocumentRegionDetector()
     private let intelligenceService = DocumentIntelligenceService()
     private let intelligenceAvailabilityProvider: any DocumentIntelligenceAvailabilityProviding
     private let recoveredTextCopyController: RecoveredTextCopyController
@@ -29,7 +31,7 @@ struct ScanReviewView: View {
         session: ProgressiveScanSession,
         snapshot: DocumentSnapshot?,
         capturedPages: [ScannedPage],
-        onAddPage: @escaping (StructuredDocument?) -> Void,
+        onAddPage: @escaping (StructuredDocument?, [VisualDocumentRegion]) -> Void,
         onRemoveCapturedPage: @escaping (ScannedPage.ID) -> Void,
         onRescan: @escaping () -> Void,
         intelligenceAvailabilityProvider: any DocumentIntelligenceAvailabilityProviding = SystemDocumentIntelligenceAvailabilityProvider(),
@@ -87,6 +89,11 @@ struct ScanReviewView: View {
                     message: structuredRecognitionMessage
                 )
 
+                VisualMarksPanel(
+                    regions: currentVisualRegions,
+                    message: visualRegionDetectionCoordinator.message
+                )
+
                 IntelligenceReviewPanel(
                     availability: documentIntelligenceAvailability,
                     sourceText: documentIntelligenceSource,
@@ -135,7 +142,7 @@ struct ScanReviewView: View {
                         .disabled(recoveredTextSummary.isEmpty)
 
                     Button("Add another page") {
-                        onAddPage(currentStructuredDocument)
+                        onAddPage(currentStructuredDocument, currentVisualRegions)
                     }
                         .buttonStyle(.bordered)
                         .disabled(snapshot == nil)
@@ -160,6 +167,9 @@ struct ScanReviewView: View {
         }
         .task(id: snapshot?.id) {
             await recognizeStructuredDocument()
+        }
+        .task(id: snapshot?.id) {
+            await detectVisualRegions()
         }
         .task {
             refreshDocumentIntelligenceAvailability()
@@ -186,7 +196,8 @@ struct ScanReviewView: View {
             id: snapshot.id,
             snapshot: snapshot,
             recognizedTextBlocks: session.recognizedTextBlocks,
-            structuredDocument: structuredRecognitionCoordinator.document(for: snapshot.id)
+            structuredDocument: structuredRecognitionCoordinator.document(for: snapshot.id),
+            visualRegions: currentVisualRegions
         )
     }
 
@@ -200,6 +211,14 @@ struct ScanReviewView: View {
 
     private var structuredRecognitionMessage: String? {
         structuredRecognitionCoordinator.message
+    }
+
+    private var currentVisualRegions: [VisualDocumentRegion] {
+        guard let snapshot else {
+            return []
+        }
+
+        return visualRegionDetectionCoordinator.regions(for: snapshot.id)
     }
 
     private var pagesForExport: [ScannedPage] {
@@ -275,6 +294,21 @@ struct ScanReviewView: View {
     }
 
     @MainActor
+    private func detectVisualRegions() async {
+        guard let snapshot else {
+            visualRegionDetectionCoordinator.clear()
+            return
+        }
+
+        let request = visualRegionDetectionCoordinator.begin(snapshotID: snapshot.id)
+        let regions = visualRegionDetector.detectVisualRegions(
+            in: snapshot.image,
+            textBlocks: session.recognizedTextBlocks
+        )
+        visualRegionDetectionCoordinator.complete(request, regions: regions)
+    }
+
+    @MainActor
     private func runDocumentIntelligence(_ action: DocumentIntelligenceAction) {
         Task {
             await performDocumentIntelligence(action)
@@ -345,6 +379,51 @@ private struct StructuredDocumentPanel: View {
             } else {
                 Text(message ?? "Document structure will appear after the page is analyzed.")
                     .foregroundStyle(.secondary)
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+}
+
+private struct VisualMarksPanel: View {
+    let regions: [VisualDocumentRegion]
+    let message: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Visual marks")
+                .font(.headline)
+
+            if let message {
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else if regions.isEmpty {
+                Text("No stamps, signatures, or non-text marks detected.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("\(regions.count) likely non-text mark\(regions.count == 1 ? "" : "s") will be preserved for recomposed export.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(regions) { region in
+                            Image(uiImage: region.image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 82, height: 82)
+                                .padding(6)
+                                .background(Color(uiColor: .tertiarySystemBackground))
+                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                .accessibilityLabel("Detected visual mark")
+                        }
+                    }
+                }
             }
         }
         .padding(14)
@@ -436,7 +515,8 @@ private struct PageSetPanel: View {
     private func summary(for displayPage: ReviewPageSet.DisplayPage) -> String {
         let visualQuality = Int(displayPage.visualQuality * 100)
         let lineLabel = displayPage.textLineCount == 1 ? "text line" : "text lines"
-        return "\(visualQuality)% visual quality · \(displayPage.textLineCount) \(lineLabel)"
+        let markLabel = displayPage.visualRegionCount == 1 ? "visual mark" : "visual marks"
+        return "\(visualQuality)% visual quality · \(displayPage.textLineCount) \(lineLabel) · \(displayPage.visualRegionCount) \(markLabel)"
     }
 }
 
