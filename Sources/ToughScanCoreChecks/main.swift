@@ -1,3 +1,4 @@
+import CoreGraphics
 import ToughScanCore
 
 @main
@@ -19,6 +20,8 @@ struct ToughScanCoreChecks {
         testScanGuidanceTargetsVeryUncertainTextBeforeReview()
         testSessionIsReadyWhenOnlyUncertainAndSuccessfulTilesRemain()
         testSessionIsNotReadyWithMissingOrVeryUncertainTiles()
+        testNormalizedRectConvertsVisionBottomLeftToImageTopLeft()
+        testNormalizedRectMapsPixelsFromDeclaredCoordinateSpace()
         testVisionRegionMapsToExpectedTile()
         testRegionSpanningTilesMapsToEveryTouchedTile()
         testMappingAggregatesTileEvidence()
@@ -403,6 +406,30 @@ private func testSessionIsNotReadyWithMissingOrVeryUncertainTiles() {
 
     expect(!missingSession.isReadyForReview)
     expect(!weakSession.isReadyForReview)
+}
+
+private func testNormalizedRectConvertsVisionBottomLeftToImageTopLeft() {
+    let visionRect = NormalizedRect(x: 0.20, y: 0.70, width: 0.30, height: 0.10)
+    let imageRect = visionRect.converted(from: .visionBottomLeft, to: .imageTopLeft)
+
+    expect(isClose(imageRect.x, 0.20))
+    expect(isClose(imageRect.y, 0.20))
+    expect(isClose(imageRect.width, 0.30))
+    expect(isClose(imageRect.height, 0.10))
+    expect(imageRect.converted(from: .imageTopLeft, to: .visionBottomLeft) == visionRect)
+}
+
+private func testNormalizedRectMapsPixelsFromDeclaredCoordinateSpace() {
+    let visionRect = NormalizedRect(x: 0.25, y: 0.60, width: 0.50, height: 0.20)
+    let pixelRect = visionRect.pixelRect(
+        in: CGSize(width: 200, height: 100),
+        from: .visionBottomLeft
+    )
+
+    expect(isClose(pixelRect.origin.x, 50))
+    expect(isClose(pixelRect.origin.y, 20))
+    expect(isClose(pixelRect.size.width, 100))
+    expect(isClose(pixelRect.size.height, 20))
 }
 
 private func testVisionRegionMapsToExpectedTile() {
