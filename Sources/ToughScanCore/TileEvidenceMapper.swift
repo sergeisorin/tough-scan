@@ -137,12 +137,7 @@ public struct TileEvidenceMapper: Sendable {
     }
 
     private func convertVisionBoxToTopLeftGrid(_ box: NormalizedRect) -> NormalizedRect {
-        NormalizedRect(
-            x: box.x,
-            y: 1 - box.y - box.height,
-            width: box.width,
-            height: box.height
-        )
+        box.converted(from: .visionBottomLeft, to: .imageTopLeft)
     }
 
     private func allTileCoordinates() -> [TileCoordinate] {
