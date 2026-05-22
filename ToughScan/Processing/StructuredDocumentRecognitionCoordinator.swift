@@ -53,6 +53,14 @@ struct StructuredDocumentRecognitionCoordinator: Equatable {
         message = nil
     }
 
+    func document(for snapshotID: UUID) -> StructuredDocument? {
+        guard self.snapshotID == snapshotID else {
+            return nil
+        }
+
+        return document
+    }
+
     private func isCurrent(_ request: StructuredDocumentRecognitionRequest) -> Bool {
         snapshotID == request.snapshotID && runID == request.runID
     }
