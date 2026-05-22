@@ -45,6 +45,7 @@ targets:
       - ToughScan/Processing/DocumentIntelligenceRunCoordinator.swift
       - ToughScan/Processing/DocumentIntelligenceService.swift
       - ToughScan/Processing/DocumentSnapshot.swift
+      - ToughScan/Processing/CaptureScoring.swift
       - ToughScan/Processing/FrameQualityAnalyzer.swift
       - ToughScan/Processing/FrameQualityMetrics.swift
       - ToughScan/Processing/ImageEnhancer.swift
