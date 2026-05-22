@@ -118,6 +118,8 @@ struct ScanReviewView: View {
                         .foregroundStyle(.secondary)
                 }
 
+                CopyableTextPanel(summary: recoveredTextSummary)
+
                 if !intelligenceRunCoordinator.notes.isEmpty {
                     Toggle("Include intelligence notes in export", isOn: $includesIntelligenceNotesInExport)
                         .font(.subheadline.weight(.medium))
@@ -130,7 +132,7 @@ struct ScanReviewView: View {
 
                     Button("Copy recovered text", action: copyRecoveredText)
                         .buttonStyle(.bordered)
-                        .disabled(recoveredTextSource.isEmpty)
+                        .disabled(recoveredTextSummary.isEmpty)
 
                     Button("Add another page") {
                         onAddPage(currentStructuredDocument)
@@ -216,12 +218,16 @@ struct ScanReviewView: View {
         documentIntelligenceSource
     }
 
+    private var recoveredTextSummary: ReviewTextSourceSummary {
+        ReviewTextSourceBuilder.makeSummary(from: pagesForExport)
+    }
+
     private var recoveredTextSource: String {
-        ReviewTextSourceBuilder.makeSource(from: pagesForExport)
+        recoveredTextSummary.text
     }
 
     private var showsImageOnlyExportMessage: Bool {
-        !pagesForExport.isEmpty && recoveredTextSource.isEmpty
+        !pagesForExport.isEmpty && recoveredTextSummary.isEmpty
     }
 
     private func refreshDocumentIntelligenceAvailability() {
@@ -248,11 +254,7 @@ struct ScanReviewView: View {
     }
 
     private func copyRecoveredText() {
-        if recoveredTextCopyController.copyRecoveredText(from: pagesForExport) {
-            copyConfirmationMessage = "Recovered text copied."
-        } else {
-            copyConfirmationMessage = "No recovered text is ready to copy yet."
-        }
+        copyConfirmationMessage = recoveredTextCopyController.copyRecoveredTextResult(from: pagesForExport).message
     }
 
     @MainActor
@@ -435,6 +437,31 @@ private struct PageSetPanel: View {
         let visualQuality = Int(displayPage.visualQuality * 100)
         let lineLabel = displayPage.textLineCount == 1 ? "text line" : "text lines"
         return "\(visualQuality)% visual quality · \(displayPage.textLineCount) \(lineLabel)"
+    }
+}
+
+private struct CopyableTextPanel: View {
+    let summary: ReviewTextSourceSummary
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Copyable recovered text")
+                .font(.headline)
+
+            if summary.isEmpty {
+                Text("No copyable text is ready yet. Rescan weak areas or add another page to improve OCR before copying.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("Ready to copy \(summary.sourceDescription) from \(summary.copyablePageDescription). This is the same recovered source used for text export and AI-assisted review.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 }
 

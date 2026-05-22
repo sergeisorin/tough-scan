@@ -86,6 +86,46 @@ final class ReviewTextSourceBuilderTests: XCTestCase {
         XCTAssertEqual(ReviewTextSourceBuilder.makeSource(from: pages), "Page 1\nFirst\n\nPage 2\nSecond")
     }
 
+    func testSummaryDescribesStructuredAndOCRSources() {
+        let pages = [
+            ScannedPage(
+                snapshot: makeSnapshot(),
+                recognizedTextBlocks: [makeTextBlock("OCR fallback")],
+                structuredDocument: StructuredDocument(
+                    paragraphs: ["Structured paragraph"],
+                    tables: [],
+                    lists: [],
+                    barcodes: []
+                )
+            ),
+            ScannedPage(snapshot: makeSnapshot(), recognizedTextBlocks: [makeTextBlock("OCR page")])
+        ]
+
+        let summary = ReviewTextSourceBuilder.makeSummary(from: pages)
+
+        XCTAssertEqual(summary.text, "Page 1\nStructured paragraph\n\nPage 2\nOCR page")
+        XCTAssertEqual(summary.copyablePageCount, 2)
+        XCTAssertTrue(summary.usesStructuredText)
+        XCTAssertTrue(summary.usesOCRText)
+        XCTAssertEqual(summary.sourceDescription, "structured and OCR text")
+        XCTAssertEqual(summary.copyablePageDescription, "2 pages")
+    }
+
+    func testSummaryDescribesEmptySource() {
+        let pages = [
+            ScannedPage(snapshot: makeSnapshot(), recognizedTextBlocks: [makeTextBlock("   ")])
+        ]
+
+        let summary = ReviewTextSourceBuilder.makeSummary(from: pages)
+
+        XCTAssertTrue(summary.isEmpty)
+        XCTAssertEqual(summary.copyablePageCount, 0)
+        XCTAssertFalse(summary.usesStructuredText)
+        XCTAssertFalse(summary.usesOCRText)
+        XCTAssertEqual(summary.sourceDescription, "no copyable text")
+        XCTAssertEqual(summary.copyablePageDescription, "0 pages")
+    }
+
     private func makeTextBlock(_ text: String) -> RecognizedTextBlock {
         RecognizedTextBlock(
             text: text,
