@@ -10,7 +10,33 @@ final class StructuredDocumentRecognitionCoordinatorTests: XCTestCase {
         coordinator.complete(request, document: document)
 
         XCTAssertEqual(coordinator.document, document)
+        XCTAssertEqual(coordinator.document(for: snapshotID), document)
         XCTAssertNil(coordinator.message)
+    }
+
+    func testDocumentLookupRejectsDifferentSnapshot() {
+        var coordinator = StructuredDocumentRecognitionCoordinator()
+        let snapshotID = UUID()
+        let request = coordinator.begin(snapshotID: snapshotID)
+        let document = StructuredDocument(paragraphs: ["Recognized"], tables: [], lists: [], barcodes: [])
+
+        coordinator.complete(request, document: document)
+
+        XCTAssertNil(coordinator.document(for: UUID()))
+    }
+
+    func testNewSnapshotClearsCompletedDocument() {
+        var coordinator = StructuredDocumentRecognitionCoordinator()
+        let request = coordinator.begin(snapshotID: UUID())
+        coordinator.complete(
+            request,
+            document: StructuredDocument(paragraphs: ["Recognized"], tables: [], lists: [], barcodes: [])
+        )
+
+        _ = coordinator.begin(snapshotID: UUID())
+
+        XCTAssertNil(coordinator.document)
+        XCTAssertEqual(coordinator.message, StructuredDocumentRecognitionCoordinator.analyzingMessage)
     }
 
     func testOlderCompletionDoesNotReplaceNewerSnapshot() {
@@ -38,6 +64,16 @@ final class StructuredDocumentRecognitionCoordinatorTests: XCTestCase {
 
         XCTAssertNil(coordinator.document)
         XCTAssertEqual(coordinator.message, StructuredDocumentRecognitionCoordinator.analyzingMessage)
+    }
+
+    func testFailureAppliesForMatchingSnapshot() {
+        var coordinator = StructuredDocumentRecognitionCoordinator()
+        let request = coordinator.begin(snapshotID: UUID())
+
+        coordinator.fail(request)
+
+        XCTAssertNil(coordinator.document)
+        XCTAssertEqual(coordinator.message, StructuredDocumentRecognitionCoordinator.unavailableMessage)
     }
 
     func testClearRemovesDocumentAndMessage() {

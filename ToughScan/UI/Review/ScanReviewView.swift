@@ -83,7 +83,7 @@ struct ScanReviewView: View {
                 RecognizedTextPanel(blocks: session.recognizedTextBlocks)
 
                 StructuredDocumentPanel(
-                    document: structuredDocument,
+                    document: currentStructuredDocument,
                     message: structuredRecognitionMessage
                 )
 
@@ -133,7 +133,7 @@ struct ScanReviewView: View {
                         .disabled(recoveredTextSource.isEmpty)
 
                     Button("Add another page") {
-                        onAddPage(structuredDocument)
+                        onAddPage(currentStructuredDocument)
                     }
                         .buttonStyle(.bordered)
                         .disabled(snapshot == nil)
@@ -184,12 +184,16 @@ struct ScanReviewView: View {
             id: snapshot.id,
             snapshot: snapshot,
             recognizedTextBlocks: session.recognizedTextBlocks,
-            structuredDocument: structuredDocument
+            structuredDocument: structuredRecognitionCoordinator.document(for: snapshot.id)
         )
     }
 
-    private var structuredDocument: StructuredDocument? {
-        structuredRecognitionCoordinator.document
+    private var currentStructuredDocument: StructuredDocument? {
+        guard let snapshot else {
+            return nil
+        }
+
+        return structuredRecognitionCoordinator.document(for: snapshot.id)
     }
 
     private var structuredRecognitionMessage: String? {
