@@ -50,7 +50,25 @@ final class ReviewPageSetTests: XCTestCase {
         XCTAssertEqual(displayPage.visualQuality, 0.82)
     }
 
-    private func makePage(id: UUID, text: String) -> ScannedPage {
+    func testCapturedPagesKeepVisualRegions() throws {
+        let current = makePage(
+            id: UUID(uuidString: "00000000-0000-0000-0000-000000000003")!,
+            text: "Current",
+            visualRegions: [makeVisualRegion()]
+        )
+
+        let pageSet = ReviewPageSet(capturedPages: [current], currentPage: nil)
+        let displayPage = try XCTUnwrap(pageSet.displayPages.first)
+
+        XCTAssertEqual(pageSet.pagesForExport.first?.visualRegions.count, 1)
+        XCTAssertEqual(displayPage.visualRegionCount, 1)
+    }
+
+    private func makePage(
+        id: UUID,
+        text: String,
+        visualRegions: [VisualDocumentRegion] = []
+    ) -> ScannedPage {
         ScannedPage(
             id: id,
             snapshot: DocumentSnapshot(
@@ -64,7 +82,18 @@ final class ReviewPageSetTests: XCTestCase {
                     languageCode: "en",
                     tileCoordinates: [TileCoordinate(column: 0, row: 0)]
                 )
-            ]
+            ],
+            visualRegions: visualRegions
+        )
+    }
+
+    private func makeVisualRegion() -> VisualDocumentRegion {
+        VisualDocumentRegion(
+            id: UUID(uuidString: "00000000-0000-0000-0000-000000000111")!,
+            kind: .stampOrSignature,
+            boundingBox: NormalizedRect(x: 0.1, y: 0.2, width: 0.3, height: 0.2),
+            confidence: 0.78,
+            image: makeImage()
         )
     }
 

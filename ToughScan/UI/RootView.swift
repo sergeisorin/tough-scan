@@ -35,7 +35,10 @@ struct RootView: View {
         }
     }
 
-    private func addCurrentPageAndContinue(structuredDocument: StructuredDocument?) {
+    private func addCurrentPageAndContinue(
+        structuredDocument: StructuredDocument?,
+        visualRegions: [VisualDocumentRegion]
+    ) {
         guard let bestSnapshot else {
             return
         }
@@ -44,7 +47,8 @@ struct RootView: View {
             ScannedPage(
                 snapshot: bestSnapshot,
                 recognizedTextBlocks: session.recognizedTextBlocks,
-                structuredDocument: structuredDocument
+                structuredDocument: structuredDocument,
+                visualRegions: visualRegions
             )
         )
         session = ProgressiveScanSession(gridWidth: 4, gridHeight: 6)
