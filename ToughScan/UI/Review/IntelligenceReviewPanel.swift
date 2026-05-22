@@ -4,12 +4,19 @@ struct IntelligenceReviewPanel: View {
     let availability: DocumentIntelligenceAvailability
     let sourceText: String
     let notes: DocumentIntelligenceNotes
-    let message: String?
-    let runningAction: DocumentIntelligenceAction?
+    let runState: DocumentIntelligenceRunState
     let onRunAction: (DocumentIntelligenceAction) -> Void
 
     private var canRunActions: Bool {
-        availability.canGenerate && !sourceText.isEmpty && runningAction == nil
+        availability.canGenerate && !sourceText.isEmpty && !isRunning
+    }
+
+    private var isRunning: Bool {
+        if case .running = runState {
+            return true
+        }
+
+        return false
     }
 
     var body: some View {
@@ -29,13 +36,7 @@ struct IntelligenceReviewPanel: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             } else {
-                actionButtons
-            }
-
-            if let message {
-                Text(message)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                actionList
             }
 
             if notes.isEmpty {
@@ -62,20 +63,29 @@ struct IntelligenceReviewPanel: View {
         }
     }
 
-    private var actionButtons: some View {
-        HStack(spacing: 10) {
+    private var actionList: some View {
+        VStack(alignment: .leading, spacing: 10) {
             ForEach(DocumentIntelligenceAction.allCases, id: \.self) { action in
-                Button {
-                    onRunAction(action)
-                } label: {
-                    if runningAction == action {
-                        ProgressView()
-                    } else {
-                        Text(action.buttonTitle)
+                VStack(alignment: .leading, spacing: 4) {
+                    Button {
+                        onRunAction(action)
+                    } label: {
+                        if case .running(let runningAction) = runState,
+                           runningAction == action {
+                            ProgressView()
+                        } else {
+                            Text(runState.buttonTitle(for: action))
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(!canRunActions)
+
+                    if let statusMessage = runState.statusMessage(for: action) {
+                        Text(statusMessage)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
-                .buttonStyle(.bordered)
-                .disabled(!canRunActions)
             }
         }
     }
