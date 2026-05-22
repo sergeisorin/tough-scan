@@ -78,6 +78,26 @@ final class ScanExportServiceTests: XCTestCase {
         XCTAssertFalse(text.contains("Raw OCR fallback"))
     }
 
+    func testMakeExportBundleUsesCanonicalRecoveredTextSource() throws {
+        let service = ScanExportService()
+        let pages = [
+            makePage(text: "   ", size: CGSize(width: 100, height: 160)),
+            makePage(text: "Second page text", size: CGSize(width: 120, height: 180))
+        ]
+
+        let bundle = try service.makeExportBundle(from: pages)
+        defer {
+            bundle.cleanup()
+        }
+
+        let textURL = try XCTUnwrap(bundle.fileURLs.first { $0.pathExtension == "txt" })
+        let text = try String(contentsOf: textURL, encoding: .utf8)
+
+        XCTAssertEqual(text, ReviewTextSourceBuilder.makeSource(from: pages))
+        XCTAssertFalse(text.contains("Page 1\n"))
+        XCTAssertTrue(text.contains("Page 2\nSecond page text"))
+    }
+
     func testMakeExportBundleExcludesIntelligenceNotesByDefault() throws {
         let service = ScanExportService()
         let notes = DocumentIntelligenceNotes(summary: "AI summary")
