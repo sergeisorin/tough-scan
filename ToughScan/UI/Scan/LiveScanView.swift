@@ -67,10 +67,12 @@ struct LiveScanView: View {
             }
 
             HStack(spacing: 12) {
+                #if DEBUG
                 Button("Debug stronger pass") {
                     addSimulatedFrame()
                 }
                 .buttonStyle(.bordered)
+                #endif
 
                 Button("Review scan", action: onReview)
                     .buttonStyle(.borderedProminent)
@@ -286,6 +288,7 @@ struct LiveScanView: View {
         liveScanMessage = messageCoordinator.currentMessage
     }
 
+    #if DEBUG
     private func addSimulatedFrame() {
         let weakTiles = session.confidenceMap.weakestTiles(limit: 4)
         let targetCoordinates = weakTiles.isEmpty
@@ -334,6 +337,7 @@ struct LiveScanView: View {
             context.fill(CGRect(x: 72, y: 216, width: 520, height: 8))
         }
     }
+    #endif
 }
 
 private struct CameraPreviewPlaceholder: View {
