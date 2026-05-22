@@ -29,7 +29,7 @@ The app is split into a testable scan domain and an iOS shell:
 - `ToughScan/Export/` owns local PDF and text export bundles.
 - `ToughScanTests/` covers scan behavior, camera-control state, processing helpers, document intelligence state, review page sets, and export behavior.
 
-The current `project.yml` targets iOS 26. Some code is guarded with compiler and availability checks for newer Vision APIs, but Foundation Models is imported directly in the document-intelligence layer. If broader device support becomes important, AI-assisted review should be isolated behind build settings or target separation before lowering the deployment target.
+The current `project.yml` targets iOS 26, and near-term development is iOS 26-first. Vision and Foundation Models features can be used directly when they improve document recovery, structured recognition, local AI-assisted review, or export, while unavailable Apple Intelligence states must remain non-blocking for scan, OCR, copy, and export.
 
 ## Data Flow
 
@@ -52,16 +52,10 @@ The current `project.yml` targets iOS 26. Some code is guarded with compiler and
 
 ## Development Gaps And Next Steps
 
-1. Validate the live scan pipeline on a real iPhone with hard documents: skewed pages, low contrast, glare, faded ink, Hebrew, English, and mixed content. The simulator cannot prove capture, focus, exposure, lens-smudge, or OCR quality.
-2. Remove or hide development-only controls such as `Debug stronger pass` before treating the app as user-facing.
-3. Tune frame-quality thresholds with real samples. Brightness, contrast, sharpness, glare, smudge confidence, geometry confidence, text coverage, and OCR confidence need measured thresholds instead of only code-level heuristics.
-4. Strengthen copy recovery. The review screen should make it obvious which text is copyable, preserve page and reading order, and export structured text for paragraphs, tables, lists, and barcodes when available.
-5. Clarify iOS support. Decide whether the near-term app is iOS 26-only, or whether iOS 26 document structure and intelligence are optional capabilities over a lower baseline scanner.
-6. Harden AI-assisted review. Summaries, key-detail extraction, and cleaned-text suggestions are core review capabilities on supported devices, but must remain advisory, local, clearly labeled, and excluded from export unless the user opts in.
-7. Align documentation and validation. `README.md` should separate basic scan validation from supported-device Apple Intelligence capability validation.
-8. Add privacy and logging checks. OCR text, document images, intelligence prompts, generated notes, and extracted PII must not appear in logs.
-9. Broaden automated checks around review and export behavior: multi-page ordering, page removal, stale structured documents, stale intelligence results, empty OCR, and failed export cleanup.
-10. Create a small real-world test corpus of difficult documents for repeatable manual validation: blurred print, low light, glare, creases, small fonts, tables, forms, receipts, Hebrew, English, and mixed-language pages.
+1. Validate the live scan pipeline on a real iPhone with a small corpus of hard documents: blurred print, low light, glare, creases, faded ink, small fonts, tables, forms, receipts, Hebrew, English, and mixed-language pages. The simulator cannot prove capture, focus, exposure, lens-smudge, or OCR quality.
+2. Tune frame-quality and readiness thresholds with real samples. Brightness, contrast, sharpness, glare, smudge confidence, geometry confidence, text coverage, and OCR confidence now have named defaults, but the values still need evidence-based calibration.
+3. Strengthen copy recovery. The review screen should make it obvious which text is copyable, preserve page and reading order, and export structured text for paragraphs, tables, lists, and barcodes when available.
+4. Use real-device findings to prioritize follow-up work: capture guidance, copy/review improvements, structured export fidelity, or AI-assisted review polish.
 
 ## Non-Core Or Deferred Architecture
 

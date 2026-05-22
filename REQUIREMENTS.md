@@ -88,7 +88,7 @@ The implemented app already covers more than the original MVP scaffold:
 - PDF and text export bundles exist.
 - Unit tests cover many core, processing, export, and optional-intelligence behaviors.
 
-The requirements have been refocused from the later "iOS 26-first upgrade" conversation. iOS 26 APIs can help, but they should not define the product. Translation is not relevant to the current goal.
+The near-term product is iOS 26-first. iOS 26 APIs are part of the current implementation when they improve document recovery, structured recognition, local AI-assisted review, or export, but Apple Intelligence must still degrade gracefully and never block scan, OCR, copy, or export. Translation is not relevant to the current goal.
 
 ## Gaps And Next Development Steps
 
@@ -96,10 +96,5 @@ The requirements have been refocused from the later "iOS 26-first upgrade" conve
 2. Build a small validation set of hard-to-read and hard-to-copy documents: faded print, small fonts, low light, glare, blur, skew, creases, forms, tables, receipts, Hebrew, English, and mixed-language pages.
 3. Tune confidence and quality thresholds using that validation set. The app needs product-level definitions for "ready for review", "weak text", "missing region", and "rescan needed".
 4. Improve the review copy workflow. Make copyable recovered text and structured text easier to inspect, select, and trust.
-5. Decide the platform baseline. If wider support matters, isolate iOS 26-only AI-assisted review from the core scanner while keeping scan, OCR, copy, and export available without Apple Intelligence.
-6. Remove development-only UI before user testing, especially the simulated stronger-pass control.
-7. Tighten export behavior for edge cases: empty OCR, partially structured pages, deleted pages, stale review data, failed temporary-file writes, and optional notes.
-8. Add privacy tests and manual checks to ensure OCR text, document images, extracted details, and generated notes are never logged.
-9. Reconcile README validation with this scope. Apple Intelligence validation should be clearly labeled as supported-device capability validation, separate from the basic scan-validation path.
-10. After validation, prioritize the next feature by evidence: either capture-quality tuning, copy/review improvements, structured export, or platform-baseline cleanup.
+5. After validation, prioritize the next feature by evidence: capture-quality tuning, copy/review improvements, structured export fidelity, or AI-assisted review polish.
 
