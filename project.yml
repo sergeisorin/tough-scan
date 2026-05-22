@@ -38,6 +38,7 @@ targets:
       - ToughScan/Export/ScanExportBundle.swift
       - ToughScan/Export/RecomposedDocumentRenderer.swift
       - ToughScan/Export/ScanExportService.swift
+      - ToughScan/UI/Review/ScanReviewState.swift
       - ToughScan/Camera/CameraControlState.swift
       - ToughScan/Camera/ScanAutomationController.swift
       - ToughScan/Processing/DocumentDetectionGeometryMapper.swift

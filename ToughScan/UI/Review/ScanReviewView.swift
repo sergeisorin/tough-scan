@@ -22,7 +22,6 @@ struct ScanReviewView: View {
     @State private var copyConfirmationMessage: String?
 
     private let exportService = ScanExportService()
-    private let recomposedDocumentRenderer = RecomposedDocumentRenderer()
     private let structuredRecognitionService: any StructuredDocumentRecognizing
     private let visualRegionDetectionService: VisualDocumentRegionDetectionService
     private let intelligenceService = DocumentIntelligenceService()
@@ -51,6 +50,17 @@ struct ScanReviewView: View {
         self.recoveredTextCopyController = recoveredTextCopyController
         self.structuredRecognitionService = structuredRecognitionService
         self.visualRegionDetectionService = visualRegionDetectionService
+    }
+
+    private var reviewState: ScanReviewState {
+        ScanReviewState(
+            session: session,
+            snapshot: snapshot,
+            capturedPages: capturedPages,
+            structuredRecognitionCoordinator: structuredRecognitionCoordinator,
+            visualRegionDetectionCoordinator: visualRegionDetectionCoordinator,
+            selectedExportMode: selectedExportMode
+        )
     }
 
     var body: some View {
@@ -197,95 +207,59 @@ struct ScanReviewView: View {
     }
 
     private var currentPage: ScannedPage? {
-        guard let snapshot else {
-            return nil
-        }
-
-        return ScannedPage(
-            id: snapshot.id,
-            snapshot: snapshot,
-            recognizedTextBlocks: session.recognizedTextBlocks,
-            structuredDocument: structuredRecognitionCoordinator.document(for: snapshot.id),
-            visualRegions: currentVisualRegions
-        )
+        reviewState.currentPage
     }
 
     private var currentStructuredDocument: StructuredDocument? {
-        guard let snapshot else {
-            return nil
-        }
-
-        return structuredRecognitionCoordinator.document(for: snapshot.id)
+        reviewState.currentStructuredDocument
     }
 
     private var structuredRecognitionMessage: String? {
-        structuredRecognitionCoordinator.message
+        reviewState.structuredRecognitionMessage
     }
 
     private var currentVisualRegions: [VisualDocumentRegion] {
-        guard let snapshot else {
-            return []
-        }
-
-        return visualRegionDetectionCoordinator.regions(for: snapshot.id)
+        reviewState.currentVisualRegions
     }
 
     private var pagesForExport: [ScannedPage] {
-        pageSet.pagesForExport
+        reviewState.pagesForExport
     }
 
     private var pageSet: ReviewPageSet {
-        ReviewPageSet(capturedPages: capturedPages, currentPage: currentPage)
+        reviewState.pageSet
     }
 
     private var documentIntelligenceSource: String {
-        recoveredTextSource
+        reviewState.documentIntelligenceSource
     }
 
     private var documentIntelligenceSourceID: String {
-        documentIntelligenceSource
+        reviewState.documentIntelligenceSourceID
     }
 
     private var recoveredTextSummary: ReviewTextSourceSummary {
-        ReviewTextSourceBuilder.makeSummary(from: pagesForExport)
+        reviewState.recoveredTextSummary
     }
 
     private var recoveredTextSource: String {
-        recoveredTextSummary.text
+        reviewState.recoveredTextSource
     }
 
     private var showsImageOnlyExportMessage: Bool {
-        !pagesForExport.isEmpty && recoveredTextSummary.isEmpty
+        reviewState.showsImageOnlyExportMessage
     }
 
     private var recomposedEligiblePageCount: Int {
-        pagesForExport.filter { recomposedDocumentRenderer.isEligibleForRecomposition($0) }.count
+        reviewState.recomposedEligiblePageCount
     }
 
     private var isSelectedExportModeUnavailable: Bool {
-        selectedExportMode == .recomposedPDFWithVisualMarks &&
-            recomposedEligiblePageCount == 0
+        reviewState.isSelectedExportModeUnavailable
     }
 
     private var exportModeMessage: String {
-        switch selectedExportMode {
-        case .originalImagePDF:
-            return "Default. Preserves the recovered page image exactly as reviewed."
-        case .recomposedPDFWithVisualMarks:
-            guard !pagesForExport.isEmpty else {
-                return "Cleaned/recomposed export becomes available after a page is ready."
-            }
-
-            guard recomposedEligiblePageCount > 0 else {
-                return "Cleaned/recomposed export needs positioned OCR text. Use original-image PDF for this scan."
-            }
-
-            if recomposedEligiblePageCount < pagesForExport.count {
-                return "Eligible pages will be recomposed; pages without positioned text will fall back to original-image PDF."
-            }
-
-            return "Experimental. Rebuilds text on a white page and overlays detected visual marks."
-        }
+        reviewState.exportModeMessage
     }
 
     private func refreshDocumentIntelligenceAvailability() {
