@@ -1,5 +1,4 @@
 import Foundation
-import PDFKit
 import ToughScanCore
 import UIKit
 
@@ -47,33 +46,25 @@ final class ScanExportService: ScanExporting {
     private let temporaryDirectory: URL
     private let fileManager: FileManager
     private let dataWriter: ExportDataWriting
+    private let originalImagePDFRenderer: OriginalImagePDFRenderer
     private let recomposedDocumentRenderer: RecomposedDocumentRenderer
 
     init(
         temporaryDirectory: URL = FileManager.default.temporaryDirectory,
         fileManager: FileManager = .default,
         dataWriter: ExportDataWriting = AtomicExportDataWriter(),
+        originalImagePDFRenderer: OriginalImagePDFRenderer = OriginalImagePDFRenderer(),
         recomposedDocumentRenderer: RecomposedDocumentRenderer = RecomposedDocumentRenderer()
     ) {
         self.temporaryDirectory = temporaryDirectory
         self.fileManager = fileManager
         self.dataWriter = dataWriter
+        self.originalImagePDFRenderer = originalImagePDFRenderer
         self.recomposedDocumentRenderer = recomposedDocumentRenderer
     }
 
     func makePDF(from image: UIImage, textBlocks: [RecognizedTextBlock]) -> Data {
-        let format = UIGraphicsPDFRendererFormat()
-        let metadata = [
-            kCGPDFContextCreator: "Tough Scan",
-            kCGPDFContextTitle: "Recovered Document"
-        ]
-        format.documentInfo = metadata as [String: Any]
-
-        let renderer = UIGraphicsPDFRenderer(bounds: CGRect(origin: .zero, size: image.size), format: format)
-        return renderer.pdfData { context in
-            context.beginPage()
-            image.draw(in: CGRect(origin: .zero, size: image.size))
-        }
+        originalImagePDFRenderer.makePDF(from: image)
     }
 
     func makeExportBundle(
@@ -119,26 +110,7 @@ final class ScanExportService: ScanExporting {
             return recomposedDocumentRenderer.makePDF(from: pages).data
         }
 
-        let firstPageSize = pages.first?.snapshot.image.size ?? CGSize(width: 612, height: 792)
-        let format = UIGraphicsPDFRendererFormat()
-        let metadata = [
-            kCGPDFContextCreator: "Tough Scan",
-            kCGPDFContextTitle: "Recovered Document"
-        ]
-        format.documentInfo = metadata as [String: Any]
-
-        let renderer = UIGraphicsPDFRenderer(
-            bounds: CGRect(origin: .zero, size: firstPageSize),
-            format: format
-        )
-
-        return renderer.pdfData { context in
-            for page in pages {
-                let pageRect = CGRect(origin: .zero, size: page.snapshot.image.size)
-                context.beginPage(withBounds: pageRect, pageInfo: [:])
-                page.snapshot.image.draw(in: pageRect)
-            }
-        }
+        return originalImagePDFRenderer.makePDF(from: pages)
     }
 
     private func makeTextFile(
