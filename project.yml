@@ -42,6 +42,7 @@ targets:
       - ToughScan/Processing/DocumentDetectionGeometryMapper.swift
       - ToughScan/Processing/DocumentIntelligenceAvailability.swift
       - ToughScan/Processing/DocumentIntelligenceNotes.swift
+      - ToughScan/Processing/DocumentIntelligenceRunCoordinator.swift
       - ToughScan/Processing/DocumentIntelligenceService.swift
       - ToughScan/Processing/DocumentSnapshot.swift
       - ToughScan/Processing/FrameQualityAnalyzer.swift

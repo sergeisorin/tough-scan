@@ -73,3 +73,21 @@ enum DocumentIntelligenceAvailability: Equatable {
         }
     }
 }
+
+protocol DocumentIntelligenceAvailabilityProviding {
+    func currentAvailability() -> DocumentIntelligenceAvailability
+}
+
+struct SystemDocumentIntelligenceAvailabilityProvider: DocumentIntelligenceAvailabilityProviding {
+    func currentAvailability() -> DocumentIntelligenceAvailability {
+        DocumentIntelligenceAvailability.current
+    }
+}
+
+struct StaticDocumentIntelligenceAvailabilityProvider: DocumentIntelligenceAvailabilityProviding {
+    let availability: DocumentIntelligenceAvailability
+
+    func currentAvailability() -> DocumentIntelligenceAvailability {
+        availability
+    }
+}

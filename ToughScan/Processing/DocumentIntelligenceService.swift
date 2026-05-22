@@ -59,6 +59,7 @@ protocol DocumentIntelligenceGenerating {
 final class DocumentIntelligenceService {
     enum Error: Swift.Error, Equatable {
         case emptySource
+        case generationFailed(DocumentIntelligenceFailure)
     }
 
     private let generator: DocumentIntelligenceGenerating
@@ -83,9 +84,13 @@ final class DocumentIntelligenceService {
         \(limitedSource(trimmedSource))
         """
 
-        return try await generator
-            .generate(instructions: action.instructions, prompt: prompt)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        do {
+            return try await generator
+                .generate(instructions: action.instructions, prompt: prompt)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        } catch {
+            throw Error.generationFailed(Self.failure(from: error))
+        }
     }
 
     private func limitedSource(_ source: String) -> String {
@@ -98,6 +103,29 @@ final class DocumentIntelligenceService {
         [Document text was shortened to fit the local model context.]
         \(source[..<limitIndex])
         """
+    }
+
+    private static func failure(from error: Swift.Error) -> DocumentIntelligenceFailure {
+        guard let generationError = error as? LanguageModelSession.GenerationError else {
+            return .generic
+        }
+
+        switch generationError {
+        case .exceededContextWindowSize:
+            return .contextTooLong
+        case .assetsUnavailable:
+            return .modelAssetsUnavailable
+        case .unsupportedLanguageOrLocale:
+            return .unsupportedLocale
+        case .rateLimited:
+            return .rateLimited
+        case .guardrailViolation, .refusal:
+            return .guardrail
+        case .unsupportedGuide, .decodingFailure, .concurrentRequests:
+            return .generic
+        @unknown default:
+            return .generic
+        }
     }
 }
 
