@@ -52,13 +52,14 @@ final class VisualDocumentRegionDetectorTests: XCTestCase {
             UIColor.black.setFill()
             UIRectFill(CGRect(x: size.width * 0.12, y: size.height * 0.18, width: 210, height: 28))
         }
+        let visionBottomLeftY = 1 - 0.15 - 0.12
         let textBlocks = [
             RecognizedTextBlock(
                 text: "Recognized text",
                 confidence: 0.92,
                 languageCode: "en",
                 tileCoordinates: [],
-                boundingBox: NormalizedRect(x: 0.10, y: 0.15, width: 0.65, height: 0.12)
+                boundingBox: NormalizedRect(x: 0.10, y: visionBottomLeftY, width: 0.65, height: 0.12)
             )
         ]
 
