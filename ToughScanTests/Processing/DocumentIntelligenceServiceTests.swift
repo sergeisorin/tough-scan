@@ -78,6 +78,44 @@ final class DocumentIntelligenceServiceTests: XCTestCase {
         }
     }
 
+    func testGuardrailFailuresDoNotExposeRawDetails() async {
+        let generator = ThrowingIntelligenceGenerator(
+            error: LanguageModelSession.GenerationError.guardrailViolation(
+                .init(debugDescription: "passport number 123456789")
+            )
+        )
+        let service = DocumentIntelligenceService(generator: generator)
+
+        do {
+            _ = try await service.perform(.extractKeyDetails, sourceText: "Source text")
+            XCTFail("Expected mapped generation failure")
+        } catch DocumentIntelligenceService.Error.generationFailed(let failure) {
+            XCTAssertEqual(failure, .guardrail)
+            XCTAssertFalse(failure.message.contains("passport"))
+            XCTAssertFalse(failure.message.contains("123456789"))
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testGenericGenerationFailuresDoNotExposeRawDetails() async {
+        let generator = ThrowingIntelligenceGenerator(
+            error: PrivateDebugError(message: "raw OCR text and prompt should stay private")
+        )
+        let service = DocumentIntelligenceService(generator: generator)
+
+        do {
+            _ = try await service.perform(.suggestCleanedText, sourceText: "Source text")
+            XCTFail("Expected mapped generation failure")
+        } catch DocumentIntelligenceService.Error.generationFailed(let failure) {
+            XCTAssertEqual(failure, .generic)
+            XCTAssertFalse(failure.message.contains("raw OCR"))
+            XCTAssertFalse(failure.message.contains("prompt"))
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
     func testFailureMessagesAreNonTechnical() {
         XCTAssertEqual(
             DocumentIntelligenceFailure.modelAssetsUnavailable.message,
@@ -113,5 +151,13 @@ private struct ThrowingIntelligenceGenerator: DocumentIntelligenceGenerating {
 
     func generate(instructions: String, prompt: String) async throws -> String {
         throw error
+    }
+}
+
+private struct PrivateDebugError: LocalizedError {
+    let message: String
+
+    var errorDescription: String? {
+        message
     }
 }

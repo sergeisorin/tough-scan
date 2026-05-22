@@ -10,13 +10,17 @@ let package = Package(
     ],
     products: [
         .library(name: "ToughScanCore", targets: ["ToughScanCore"]),
-        .executable(name: "ToughScanCoreChecks", targets: ["ToughScanCoreChecks"])
+        .executable(name: "ToughScanCoreChecks", targets: ["ToughScanCoreChecks"]),
+        .executable(name: "ToughScanPrivacyChecks", targets: ["ToughScanPrivacyChecks"])
     ],
     targets: [
         .target(name: "ToughScanCore"),
         .executableTarget(
             name: "ToughScanCoreChecks",
             dependencies: ["ToughScanCore"]
+        ),
+        .executableTarget(
+            name: "ToughScanPrivacyChecks"
         )
     ]
 )
