@@ -16,6 +16,10 @@ struct ReviewPageSet {
             page.recognizedTextBlocks.count
         }
 
+        var visualRegionCount: Int {
+            page.visualRegions.count
+        }
+
         var visualQuality: Double {
             page.snapshot.visualQuality
         }
