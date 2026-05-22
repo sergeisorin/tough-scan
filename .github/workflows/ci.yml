@@ -29,7 +29,6 @@ jobs:
       - name: Check for Xcode with iOS 26 SDK
         id: ios26
         run: |
-          set +e
           XCODE_DEVELOPER_DIR=$(python3 -c 'import glob, os; candidates = [app_path for app_path in glob.glob("/Applications/Xcode*.app") if glob.glob(os.path.join(app_path, "Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26*.sdk"))]; print(os.path.join(sorted(candidates)[-1], "Contents/Developer") if candidates else "")')
           if [ -z "$XCODE_DEVELOPER_DIR" ]; then
             echo "available=false" >> "$GITHUB_OUTPUT"
