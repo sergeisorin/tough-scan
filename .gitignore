@@ -7,8 +7,11 @@ DerivedData/
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
 .superpowers/
+.worktrees/
+.git-rewrite/
 .impeccable.md
 ARCHITECTURE.md
 REQUIREMENTS.md
 MEMORY.md
+docs/
 
