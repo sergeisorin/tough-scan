@@ -20,7 +20,11 @@ final class StructuredDocumentRecognitionService: StructuredDocumentRecognizing 
         #if compiler(>=6.2)
         if #available(iOS 26.0, *) {
             var request = RecognizeDocumentsRequest(.revision1)
-            request.textRecognitionOptions.automaticallyDetectLanguage = true
+            request.textRecognitionOptions.automaticallyDetectLanguage = false
+            request.textRecognitionOptions.recognitionLanguages = [
+                Locale.Language(identifier: "he-IL"),
+                Locale.Language(identifier: "en-US")
+            ]
             request.textRecognitionOptions.useLanguageCorrection = true
             request.barcodeDetectionOptions.enabled = true
 

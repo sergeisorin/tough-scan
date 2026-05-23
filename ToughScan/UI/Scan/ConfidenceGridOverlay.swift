@@ -22,9 +22,40 @@ struct ConfidenceGridOverlay: View {
                             y: (CGFloat(tile.coordinate.row) * tileHeight) + (tileHeight / 2)
                         )
                 }
+
+                ConfidenceGridLines(columns: map.width, rows: map.height)
             }
         }
         .accessibilityElement(children: .contain)
+    }
+}
+
+private struct ConfidenceGridLines: View {
+    let columns: Int
+    let rows: Int
+
+    var body: some View {
+        GeometryReader { proxy in
+            Path { path in
+                let tileWidth = proxy.size.width / CGFloat(columns)
+                let tileHeight = proxy.size.height / CGFloat(rows)
+
+                for column in 0...columns {
+                    let x = CGFloat(column) * tileWidth
+                    path.move(to: CGPoint(x: x, y: 0))
+                    path.addLine(to: CGPoint(x: x, y: proxy.size.height))
+                }
+
+                for row in 0...rows {
+                    let y = CGFloat(row) * tileHeight
+                    path.move(to: CGPoint(x: 0, y: y))
+                    path.addLine(to: CGPoint(x: proxy.size.width, y: y))
+                }
+            }
+            .stroke(Color.primary.opacity(0.35), lineWidth: 1)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
@@ -59,13 +90,13 @@ private struct ConfidenceTileView: View {
     private var opacity: Double {
         switch tile.state {
         case .successful:
-            return 0.18
+            return 0.24
         case .uncertain:
-            return 0.28
+            return 0.36
         case .veryUncertain:
-            return 0.34
+            return 0.44
         case .needsScan:
-            return 0.20
+            return 0.28
         }
     }
 

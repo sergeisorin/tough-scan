@@ -7,6 +7,7 @@ struct NormalizedDocumentPreviewView: View {
     let showsOverlay: Bool
     var targetCoordinate: TileCoordinate? = nil
     var recognizedTextBlocks: [RecognizedTextBlock] = []
+    var showsTextLineOverlay = false
 
     var body: some View {
         ZStack {
@@ -30,7 +31,7 @@ struct NormalizedDocumentPreviewView: View {
                                 .accessibilityLabel("Confidence overlay aligned to flattened document")
                         }
 
-                        if showsOverlay {
+                        if showsTextLineOverlay && !recognizedTextBlocks.isEmpty {
                             TextLineConfidenceOverlay(blocks: recognizedTextBlocks)
                         }
                     }
@@ -46,17 +47,25 @@ struct NormalizedDocumentPreviewView: View {
                     .frame(width: proxy.size.width, height: proxy.size.height)
                 }
             } else {
-                VStack(spacing: 10) {
-                    Image(systemName: "doc.viewfinder")
-                        .font(.title)
-                    Text("Waiting for flattened document")
-                        .font(.headline)
-                    Text("Hold all document edges in frame.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                ZStack {
+                    ConfidenceGridOverlay(
+                        map: confidenceMap,
+                        targetCoordinate: targetCoordinate
+                    )
+                    .opacity(showsOverlay ? 1 : 0.35)
+
+                    VStack(spacing: 10) {
+                        Image(systemName: "doc.viewfinder")
+                            .font(.title)
+                        Text("Waiting for flattened document")
+                            .font(.headline)
+                        Text("Hold all document edges in frame.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(24)
+                    .multilineTextAlignment(.center)
                 }
-                .padding(24)
-                .multilineTextAlignment(.center)
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
