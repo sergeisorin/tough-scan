@@ -41,6 +41,7 @@ targets:
       - ToughScan/Export/ScanExportService.swift
       - ToughScan/Export/ScanExportModeAvailability.swift
       - ToughScan/UI/Review/ScanReviewState.swift
+      - ToughScan/UI/StartScreenLayout.swift
       - ToughScan/Camera/CameraControlState.swift
       - ToughScan/Camera/ScanAutomationController.swift
       - ToughScan/Processing/DocumentDetectionGeometryMapper.swift
