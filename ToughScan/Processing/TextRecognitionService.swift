@@ -47,6 +47,10 @@ final class TextRecognitionService: TextRecognizing {
                             y: observation.boundingBox.origin.y,
                             width: observation.boundingBox.width,
                             height: observation.boundingBox.height
+                        ),
+                        recognizedWords: Self.recognizedWords(
+                            in: candidate,
+                            languageCode: "he,en"
                         )
                     )
                 }
@@ -66,6 +70,31 @@ final class TextRecognitionService: TextRecognizing {
                 continuation.resume(throwing: error)
             }
         }
+    }
+
+    private static func recognizedWords(
+        in candidate: VNRecognizedText,
+        languageCode: String
+    ) -> [NormalizedRecognizedWord] {
+        candidate.string
+            .split(whereSeparator: \.isWhitespace)
+            .compactMap { token -> NormalizedRecognizedWord? in
+                guard let box = try? candidate.boundingBox(for: token.startIndex..<token.endIndex) else {
+                    return nil
+                }
+
+                return NormalizedRecognizedWord(
+                    text: String(token),
+                    confidence: Double(candidate.confidence),
+                    languageCode: languageCode,
+                    boundingBox: NormalizedRect(
+                        x: box.boundingBox.origin.x,
+                        y: box.boundingBox.origin.y,
+                        width: box.boundingBox.width,
+                        height: box.boundingBox.height
+                    )
+                )
+            }
     }
 }
 

@@ -145,7 +145,8 @@ final class ScanFrameProcessor: CameraFrameConsumer {
                     let observation = FrameObservation(
                         id: UUID().uuidString,
                         tileEvidence: mapped.tileEvidence,
-                        recognizedTextBlocks: mapped.recognizedTextBlocks
+                        recognizedTextBlocks: mapped.recognizedTextBlocks,
+                        recognizedWords: mapped.recognizedWords
                     )
 
                     await self.onSnapshot?(snapshot)

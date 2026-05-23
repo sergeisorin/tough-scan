@@ -7,7 +7,10 @@ struct NormalizedDocumentPreviewView: View {
     let showsOverlay: Bool
     var targetCoordinate: TileCoordinate? = nil
     var recognizedTextBlocks: [RecognizedTextBlock] = []
+    var recognizedWords: [RecognizedWord] = []
+    var targetWord: RecognizedWord? = nil
     var showsTextLineOverlay = false
+    var showsWordOverlay = false
 
     var body: some View {
         ZStack {
@@ -33,6 +36,13 @@ struct NormalizedDocumentPreviewView: View {
 
                         if showsTextLineOverlay && !recognizedTextBlocks.isEmpty {
                             TextLineConfidenceOverlay(blocks: recognizedTextBlocks)
+                        }
+
+                        if showsWordOverlay && !recognizedWords.isEmpty {
+                            WordConfidenceOverlay(
+                                words: recognizedWords,
+                                targetWord: targetWord
+                            )
                         }
                     }
                     .aspectRatio(

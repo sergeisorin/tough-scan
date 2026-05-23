@@ -15,6 +15,14 @@ struct ToughScanCoreChecks {
         testMappedTextBlockPreservesBoundingBox()
         testRepeatedTextBlockKeepsHighestConfidenceBoundingBox()
         testRecognizedTextBlockCanOmitBoundingBox()
+        testRecognizedWordUsesConfidenceStateLabels()
+        testRepeatedRecognizedWordKeepsHighestConfidenceObservation()
+        testCorrectedRecognizedWordReplacesWeakObservationInSameLocation()
+        testCorrectedRecognizedWordCanReplaceSameLocationWithSimilarConfidence()
+        testWordEvidenceSummaryCountsStates()
+        testWordReadinessAllowsReviewWordsButBlocksRescanWords()
+        testWordReadinessAllowsReviewWhenOnlyAFewWordsNeedConfirmation()
+        testScanGuidanceTargetsWeakWordBeforeGridFallback()
         testGuidanceReturnsMostImportantWeakRegion()
         testScanGuidanceTargetsMissingRegionBeforeReview()
         testScanGuidanceTargetsVeryUncertainTextBeforeReview()
@@ -23,6 +31,7 @@ struct ToughScanCoreChecks {
         testNormalizedRectConvertsVisionBottomLeftToImageTopLeft()
         testNormalizedRectMapsPixelsFromDeclaredCoordinateSpace()
         testVisionRegionMapsToExpectedTile()
+        testVisionWordRegionsMapToRecognizedWords()
         testRegionSpanningTilesMapsToEveryTouchedTile()
         testMappingAggregatesTileEvidence()
         testVisualCoverageEvidenceIsMappedForBlankTiles()
@@ -260,6 +269,329 @@ private func testRecognizedTextBlockCanOmitBoundingBox() {
     expect(block.boundingBox == nil)
 }
 
+private func testRecognizedWordUsesConfidenceStateLabels() {
+    let coordinate = TileCoordinate(column: 0, row: 0)
+
+    let successful = RecognizedWord(
+        text: "clear",
+        confidence: 0.91,
+        languageCode: "en",
+        tileCoordinates: [coordinate],
+        boundingBox: NormalizedRect(x: 0.1, y: 0.7, width: 0.1, height: 0.05)
+    )
+    let review = RecognizedWord(
+        text: "check",
+        confidence: 0.58,
+        languageCode: "en",
+        tileCoordinates: [coordinate],
+        boundingBox: NormalizedRect(x: 0.2, y: 0.7, width: 0.1, height: 0.05)
+    )
+    let rescan = RecognizedWord(
+        text: "weak",
+        confidence: 0.31,
+        languageCode: "en",
+        tileCoordinates: [coordinate],
+        boundingBox: NormalizedRect(x: 0.3, y: 0.7, width: 0.1, height: 0.05)
+    )
+    let needed = RecognizedWord(
+        text: "",
+        confidence: 0,
+        languageCode: "en",
+        tileCoordinates: [coordinate],
+        boundingBox: NormalizedRect(x: 0.4, y: 0.7, width: 0.1, height: 0.05)
+    )
+
+    expect(successful.state == .successful)
+    expect(review.state == .uncertain)
+    expect(rescan.state == .veryUncertain)
+    expect(needed.state == .needsScan)
+}
+
+private func testRepeatedRecognizedWordKeepsHighestConfidenceObservation() {
+    var session = ProgressiveScanSession(gridWidth: 1, gridHeight: 1)
+    let coordinate = TileCoordinate(column: 0, row: 0)
+    let weakWord = RecognizedWord(
+        text: "Invoice",
+        confidence: 0.42,
+        languageCode: "en",
+        tileCoordinates: [coordinate],
+        boundingBox: NormalizedRect(x: 0.10, y: 0.70, width: 0.20, height: 0.06)
+    )
+    let strongWord = RecognizedWord(
+        text: "Invoice",
+        confidence: 0.88,
+        languageCode: "en",
+        tileCoordinates: [coordinate],
+        boundingBox: NormalizedRect(x: 0.11, y: 0.69, width: 0.21, height: 0.06)
+    )
+
+    session.addFrame(
+        FrameObservation(
+            id: "frame-1",
+            tileEvidence: [],
+            recognizedTextBlocks: [],
+            recognizedWords: [weakWord]
+        )
+    )
+    session.addFrame(
+        FrameObservation(
+            id: "frame-2",
+            tileEvidence: [],
+            recognizedTextBlocks: [],
+            recognizedWords: [strongWord]
+        )
+    )
+
+    expect(session.recognizedWords.count == 1)
+    expect(session.recognizedWords.first?.confidence == 0.88)
+    expect(session.recognizedWords.first?.boundingBox == strongWord.boundingBox)
+}
+
+private func testCorrectedRecognizedWordReplacesWeakObservationInSameLocation() {
+    var session = ProgressiveScanSession(gridWidth: 1, gridHeight: 1)
+    let coordinate = TileCoordinate(column: 0, row: 0)
+    let weakWord = RecognizedWord(
+        text: "5▯4",
+        confidence: 0.34,
+        languageCode: "en",
+        tileCoordinates: [coordinate],
+        boundingBox: NormalizedRect(x: 0.10, y: 0.70, width: 0.20, height: 0.06)
+    )
+    let correctedWord = RecognizedWord(
+        text: "514",
+        confidence: 0.88,
+        languageCode: "en",
+        tileCoordinates: [coordinate],
+        boundingBox: NormalizedRect(x: 0.11, y: 0.70, width: 0.18, height: 0.06)
+    )
+
+    session.addFrame(
+        FrameObservation(
+            id: "frame-1",
+            tileEvidence: [],
+            recognizedTextBlocks: [],
+            recognizedWords: [weakWord]
+        )
+    )
+    session.addFrame(
+        FrameObservation(
+            id: "frame-2",
+            tileEvidence: [],
+            recognizedTextBlocks: [],
+            recognizedWords: [correctedWord]
+        )
+    )
+
+    expect(session.recognizedWords.map(\.text) == ["514"])
+    expect(session.wordEvidenceSummary.rescanCount == 0)
+}
+
+private func testCorrectedRecognizedWordCanReplaceSameLocationWithSimilarConfidence() {
+    var session = ProgressiveScanSession(gridWidth: 1, gridHeight: 1)
+    let coordinate = TileCoordinate(column: 0, row: 0)
+    let weakWord = RecognizedWord(
+        text: "5▯4",
+        confidence: 0.62,
+        languageCode: "en",
+        tileCoordinates: [coordinate],
+        boundingBox: NormalizedRect(x: 0.10, y: 0.70, width: 0.20, height: 0.06)
+    )
+    let correctedWord = RecognizedWord(
+        text: "514",
+        confidence: 0.58,
+        languageCode: "en",
+        tileCoordinates: [coordinate],
+        boundingBox: NormalizedRect(x: 0.11, y: 0.70, width: 0.18, height: 0.06)
+    )
+
+    session.addFrame(
+        FrameObservation(
+            id: "frame-1",
+            tileEvidence: [],
+            recognizedTextBlocks: [],
+            recognizedWords: [weakWord]
+        )
+    )
+    session.addFrame(
+        FrameObservation(
+            id: "frame-2",
+            tileEvidence: [],
+            recognizedTextBlocks: [],
+            recognizedWords: [correctedWord]
+        )
+    )
+
+    expect(session.recognizedWords.map(\.text) == ["514"])
+}
+
+private func testWordEvidenceSummaryCountsStates() {
+    let coordinate = TileCoordinate(column: 0, row: 0)
+    let summary = WordEvidenceSummary(words: [
+        RecognizedWord(
+            text: "good",
+            confidence: 0.91,
+            languageCode: "en",
+            tileCoordinates: [coordinate],
+            boundingBox: NormalizedRect(x: 0.1, y: 0.7, width: 0.1, height: 0.05)
+        ),
+        RecognizedWord(
+            text: "review",
+            confidence: 0.62,
+            languageCode: "en",
+            tileCoordinates: [coordinate],
+            boundingBox: NormalizedRect(x: 0.2, y: 0.7, width: 0.1, height: 0.05)
+        ),
+        RecognizedWord(
+            text: "rescan",
+            confidence: 0.34,
+            languageCode: "en",
+            tileCoordinates: [coordinate],
+            boundingBox: NormalizedRect(x: 0.3, y: 0.7, width: 0.1, height: 0.05)
+        )
+    ])
+
+    expect(summary.totalCount == 3)
+    expect(summary.successfulCount == 1)
+    expect(summary.reviewCount == 1)
+    expect(summary.rescanCount == 1)
+    expect(summary.neededCount == 0)
+    expect(!summary.isReadyForReview)
+}
+
+private func testWordReadinessAllowsReviewWordsButBlocksRescanWords() {
+    let coordinate = TileCoordinate(column: 0, row: 0)
+    var reviewOnlySession = ProgressiveScanSession(gridWidth: 1, gridHeight: 1)
+    var rescanSession = ProgressiveScanSession(gridWidth: 1, gridHeight: 1)
+
+    reviewOnlySession.addFrame(
+        FrameObservation(
+            id: "frame-1",
+            tileEvidence: [
+                TileEvidence(
+                    coordinate: coordinate,
+                    visualQuality: 0.80,
+                    ocrConfidence: 0,
+                    textCoverage: 0
+                )
+            ],
+            recognizedTextBlocks: [],
+            recognizedWords: [
+                RecognizedWord(
+                    text: "review",
+                    confidence: 0.58,
+                    languageCode: "en",
+                    tileCoordinates: [coordinate],
+                    boundingBox: NormalizedRect(x: 0.2, y: 0.7, width: 0.1, height: 0.05)
+                )
+            ]
+        )
+    )
+    rescanSession.addFrame(
+        FrameObservation(
+            id: "frame-2",
+            tileEvidence: [
+                TileEvidence(
+                    coordinate: coordinate,
+                    visualQuality: 0.80,
+                    ocrConfidence: 0,
+                    textCoverage: 0
+                )
+            ],
+            recognizedTextBlocks: [],
+            recognizedWords: [
+                RecognizedWord(
+                    text: "rescan",
+                    confidence: 0.30,
+                    languageCode: "en",
+                    tileCoordinates: [coordinate],
+                    boundingBox: NormalizedRect(x: 0.3, y: 0.7, width: 0.1, height: 0.05)
+                )
+            ]
+        )
+    )
+
+    expect(reviewOnlySession.isReadyForReview)
+    expect(reviewOnlySession.scanGuidance().action == .readyForReview)
+    expect(!rescanSession.isReadyForReview)
+    expect(rescanSession.scanGuidance().action == .rescanWeakText)
+}
+
+private func testWordReadinessAllowsReviewWhenOnlyAFewWordsNeedConfirmation() {
+    let coordinate = TileCoordinate(column: 0, row: 0)
+    var session = ProgressiveScanSession(gridWidth: 1, gridHeight: 1)
+    let clearWords = (0..<15).map { index in
+        RecognizedWord(
+            text: "clear-\(index)",
+            confidence: 0.90,
+            languageCode: "en",
+            tileCoordinates: [coordinate],
+            boundingBox: NormalizedRect(x: Double(index) * 0.02, y: 0.70, width: 0.015, height: 0.05)
+        )
+    }
+    let weakWords = (0..<4).map { index in
+        RecognizedWord(
+            text: "weak-\(index)",
+            confidence: 0.35,
+            languageCode: "en",
+            tileCoordinates: [coordinate],
+            boundingBox: NormalizedRect(x: 0.40 + (Double(index) * 0.02), y: 0.70, width: 0.015, height: 0.05)
+        )
+    }
+
+    session.addFrame(
+        FrameObservation(
+            id: "frame-1",
+            tileEvidence: [
+                TileEvidence(
+                    coordinate: coordinate,
+                    visualQuality: 0.80,
+                    ocrConfidence: 0.74,
+                    textCoverage: 0.60
+                )
+            ],
+            recognizedTextBlocks: [],
+            recognizedWords: clearWords + weakWords
+        )
+    )
+
+    expect(session.isReadyForReview)
+    expect(session.scanGuidance().action == .readyForReview)
+}
+
+private func testScanGuidanceTargetsWeakWordBeforeGridFallback() {
+    let coordinate = TileCoordinate(column: 0, row: 0)
+    var session = ProgressiveScanSession(gridWidth: 1, gridHeight: 1)
+    let weakWord = RecognizedWord(
+        text: "514-728-301",
+        confidence: 0.36,
+        languageCode: "en",
+        tileCoordinates: [coordinate],
+        boundingBox: NormalizedRect(x: 0.30, y: 0.70, width: 0.20, height: 0.06)
+    )
+
+    session.addFrame(
+        FrameObservation(
+            id: "frame-1",
+            tileEvidence: [
+                TileEvidence(
+                    coordinate: coordinate,
+                    visualQuality: 0.80,
+                    ocrConfidence: 0.74,
+                    textCoverage: 0.60
+                )
+            ],
+            recognizedTextBlocks: [],
+            recognizedWords: [weakWord]
+        )
+    )
+
+    let guidance = session.scanGuidance()
+
+    expect(guidance.action == .rescanWeakText)
+    expect(guidance.targetWord == weakWord)
+    expect(guidance.targetTile?.coordinate == coordinate)
+}
+
 private func testGuidanceReturnsMostImportantWeakRegion() {
     var session = ProgressiveScanSession(gridWidth: 2, gridHeight: 1)
 
@@ -448,6 +780,37 @@ private func testVisionRegionMapsToExpectedTile() {
 
     expect(result.recognizedTextBlocks.first?.tileCoordinates == [TileCoordinate(column: 3, row: 0)])
     expect(touchedEvidence?.ocrConfidence == 0.91)
+}
+
+private func testVisionWordRegionsMapToRecognizedWords() {
+    let mapper = TileEvidenceMapper(gridWidth: 4, gridHeight: 4)
+    let wordBox = NormalizedRect(x: 0.10, y: 0.78, width: 0.10, height: 0.08)
+    let lineBox = NormalizedRect(x: 0.08, y: 0.76, width: 0.42, height: 0.10)
+    let region = NormalizedTextRegion(
+        text: "Invoice 847",
+        confidence: 0.82,
+        languageCode: "en",
+        boundingBox: lineBox,
+        recognizedWords: [
+            NormalizedRecognizedWord(
+                text: "Invoice",
+                confidence: 0.72,
+                languageCode: "en",
+                boundingBox: wordBox
+            )
+        ]
+    )
+
+    let result = mapper.map(regions: [region], visualQuality: 0.80)
+
+    expect(result.recognizedTextBlocks.first?.text == "Invoice 847")
+    expect(result.recognizedWords.count == 1)
+    expect(result.recognizedWords.first?.text == "Invoice")
+    expect(result.recognizedWords.first?.confidence == 0.72)
+    expect(result.recognizedWords.first?.boundingBox == wordBox)
+    expect(result.recognizedWords.first?.lineText == "Invoice 847")
+    expect(result.recognizedWords.first?.lineBoundingBox == lineBox)
+    expect(result.recognizedWords.first?.tileCoordinates == [TileCoordinate(column: 0, row: 0)])
 }
 
 private func testRegionSpanningTilesMapsToEveryTouchedTile() {

@@ -29,6 +29,28 @@ public struct NormalizedTextRegion: Equatable, Sendable {
     public let confidence: Double
     public let languageCode: String
     public let boundingBox: NormalizedRect
+    public let recognizedWords: [NormalizedRecognizedWord]
+
+    public init(
+        text: String,
+        confidence: Double,
+        languageCode: String,
+        boundingBox: NormalizedRect,
+        recognizedWords: [NormalizedRecognizedWord] = []
+    ) {
+        self.text = text
+        self.confidence = confidence.clampedToConfidenceRange
+        self.languageCode = languageCode
+        self.boundingBox = boundingBox
+        self.recognizedWords = recognizedWords
+    }
+}
+
+public struct NormalizedRecognizedWord: Equatable, Sendable {
+    public let text: String
+    public let confidence: Double
+    public let languageCode: String
+    public let boundingBox: NormalizedRect
 
     public init(
         text: String,
@@ -46,10 +68,16 @@ public struct NormalizedTextRegion: Equatable, Sendable {
 public struct TileEvidenceMappingResult: Equatable, Sendable {
     public let tileEvidence: [TileEvidence]
     public let recognizedTextBlocks: [RecognizedTextBlock]
+    public let recognizedWords: [RecognizedWord]
 
-    public init(tileEvidence: [TileEvidence], recognizedTextBlocks: [RecognizedTextBlock]) {
+    public init(
+        tileEvidence: [TileEvidence],
+        recognizedTextBlocks: [RecognizedTextBlock],
+        recognizedWords: [RecognizedWord] = []
+    ) {
         self.tileEvidence = tileEvidence
         self.recognizedTextBlocks = recognizedTextBlocks
+        self.recognizedWords = recognizedWords
     }
 }
 
@@ -75,6 +103,7 @@ public struct TileEvidenceMapper: Sendable {
             }
         )
         var blocks: [RecognizedTextBlock] = []
+        var words: [RecognizedWord] = []
 
         for region in regions where !region.text.isEmpty && region.boundingBox.area > 0 {
             let touchedTiles = tileCoordinates(touchedBy: region.boundingBox)
@@ -100,6 +129,26 @@ public struct TileEvidenceMapper: Sendable {
                     textCoverage: coverage
                 )
             }
+
+            for word in region.recognizedWords where !word.text.isEmpty && word.boundingBox.area > 0 {
+                let wordTiles = tileCoordinates(touchedBy: word.boundingBox)
+
+                guard !wordTiles.isEmpty else {
+                    continue
+                }
+
+                words.append(
+                    RecognizedWord(
+                        text: word.text,
+                        confidence: word.confidence,
+                        languageCode: word.languageCode,
+                        tileCoordinates: wordTiles,
+                        boundingBox: word.boundingBox,
+                        lineText: region.text,
+                        lineBoundingBox: region.boundingBox
+                    )
+                )
+            }
         }
 
         let evidence = evidenceByCoordinate
@@ -119,7 +168,11 @@ public struct TileEvidenceMapper: Sendable {
                 return lhs.coordinate.column < rhs.coordinate.column
             }
 
-        return TileEvidenceMappingResult(tileEvidence: evidence, recognizedTextBlocks: blocks)
+        return TileEvidenceMappingResult(
+            tileEvidence: evidence,
+            recognizedTextBlocks: blocks,
+            recognizedWords: words
+        )
     }
 
     public func tileCoordinates(touchedBy visionBoundingBox: NormalizedRect) -> [TileCoordinate] {
