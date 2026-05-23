@@ -41,6 +41,7 @@ targets:
       - ToughScan/Export/ScanExportService.swift
       - ToughScan/Export/ScanExportModeAvailability.swift
       - ToughScan/UI/Review/ScanReviewState.swift
+      - ToughScan/UI/StartScreenLayout.swift
       - ToughScan/Camera/CameraControlState.swift
       - ToughScan/Camera/ScanAutomationController.swift
       - ToughScan/Processing/DocumentDetectionGeometryMapper.swift
@@ -48,6 +49,7 @@ targets:
       - ToughScan/Processing/DocumentIntelligenceNotes.swift
       - ToughScan/Processing/DocumentIntelligenceRunCoordinator.swift
       - ToughScan/Processing/DocumentIntelligenceService.swift
+      - ToughScan/Processing/DocumentImageFusionSession.swift
       - ToughScan/Processing/DocumentSnapshot.swift
       - ToughScan/Processing/CaptureScoring.swift
       - ToughScan/Processing/FrameQualityAnalyzer.swift
@@ -71,6 +73,7 @@ targets:
       - ToughScan/Processing/VisualDocumentRegionDetector.swift
       - ToughScan/Processing/VisualInkComponent.swift
       - ToughScan/Processing/VisualInkComponentFinder.swift
+      - ToughScan/Processing/WordConfirmationRequest.swift
     dependencies:
       - package: ToughScanPackage
         product: ToughScanCore

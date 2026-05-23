@@ -68,6 +68,89 @@ final class ReviewTextSourceBuilderTests: XCTestCase {
         XCTAssertEqual(ReviewTextSourceBuilder.makeSource(from: pages), "Page 1\nReadable text")
     }
 
+    func testConfirmedWordReplacesWeakWordInExportText() {
+        let weakWord = makeWord("5▯4-7▮8-3▮1", confidence: 0.42)
+        let pages = [
+            ScannedPage(
+                snapshot: makeSnapshot(),
+                recognizedTextBlocks: [makeTextBlock("Business #: 5▯4-7▮8-3▮1")],
+                recognizedWords: [
+                    makeWord("Business", confidence: 0.91),
+                    makeWord("#:", confidence: 0.88),
+                    weakWord
+                ],
+                confirmedWords: [
+                    ConfirmedRecognizedWord(word: weakWord, resolvedText: "514-728-301")
+                ]
+            )
+        ]
+
+        XCTAssertEqual(ReviewTextSourceBuilder.makeSource(from: pages), "Page 1\nBusiness #: 514-728-301")
+    }
+
+    func testConfirmedWordTextTakesPrecedenceOverStructuredText() {
+        let weakWord = makeWord("5▯4", confidence: 0.42)
+        let pages = [
+            ScannedPage(
+                snapshot: makeSnapshot(),
+                recognizedTextBlocks: [makeTextBlock("Business #: 5▯4")],
+                recognizedWords: [
+                    makeWord("Business", confidence: 0.91),
+                    makeWord("#:", confidence: 0.88),
+                    weakWord
+                ],
+                confirmedWords: [
+                    ConfirmedRecognizedWord(word: weakWord, resolvedText: "514")
+                ],
+                structuredDocument: StructuredDocument(
+                    paragraphs: ["Structured stale business number 5▯4"],
+                    tables: [],
+                    lists: [],
+                    barcodes: []
+                )
+            )
+        ]
+
+        XCTAssertEqual(ReviewTextSourceBuilder.makeSource(from: pages), "Page 1\nBusiness #: 514")
+    }
+
+    func testConfirmedWordStillAppliesAfterOCRTextChangesInSameLocation() {
+        let weakWord = makeWord("5▯4", confidence: 0.42)
+        let correctedWord = makeWord("S14", confidence: 0.72)
+        let pages = [
+            ScannedPage(
+                snapshot: makeSnapshot(),
+                recognizedTextBlocks: [makeTextBlock("Business #: S14")],
+                recognizedWords: [
+                    makeWord("Business", confidence: 0.91),
+                    makeWord("#:", confidence: 0.88),
+                    correctedWord
+                ],
+                confirmedWords: [
+                    ConfirmedRecognizedWord(word: weakWord, resolvedText: "514")
+                ]
+            )
+        ]
+
+        XCTAssertEqual(ReviewTextSourceBuilder.makeSource(from: pages), "Page 1\nBusiness #: 514")
+    }
+
+    func testPendingWeakWordStaysMarkedInExportText() {
+        let pages = [
+            ScannedPage(
+                snapshot: makeSnapshot(),
+                recognizedTextBlocks: [makeTextBlock("VAT 17% ₪…")],
+                recognizedWords: [
+                    makeWord("VAT", confidence: 0.91),
+                    makeWord("17%", confidence: 0.88),
+                    makeWord("₪…", confidence: 0.35)
+                ]
+            )
+        ]
+
+        XCTAssertEqual(ReviewTextSourceBuilder.makeSource(from: pages), "Page 1\nVAT 17% [? ₪… ?]")
+    }
+
     func testOmitsEmptyPagesWhilePreservingOriginalPageNumbers() {
         let pages = [
             ScannedPage(snapshot: makeSnapshot(), recognizedTextBlocks: [makeTextBlock("   ")]),
@@ -132,6 +215,29 @@ final class ReviewTextSourceBuilderTests: XCTestCase {
             confidence: 0.9,
             languageCode: "en",
             tileCoordinates: [TileCoordinate(column: 0, row: 0)]
+        )
+    }
+
+    private func makeWord(_ text: String, confidence: Double) -> RecognizedWord {
+        let x: Double
+        if text == "Business" {
+            x = 0.10
+        } else if text == "#:" || text == "17%" {
+            x = 0.24
+        } else if text == "VAT" {
+            x = 0.10
+        } else {
+            x = 0.38
+        }
+
+        return RecognizedWord(
+            text: text,
+            confidence: confidence,
+            languageCode: "en",
+            tileCoordinates: [TileCoordinate(column: 0, row: 0)],
+            boundingBox: NormalizedRect(x: x, y: 0.7, width: 0.1, height: 0.05),
+            lineText: text,
+            lineBoundingBox: NormalizedRect(x: 0.1, y: 0.7, width: 0.4, height: 0.05)
         )
     }
 

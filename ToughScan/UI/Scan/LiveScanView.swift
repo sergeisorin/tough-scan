@@ -5,90 +5,121 @@ import UIKit
 struct LiveScanView: View {
     @Binding var session: ProgressiveScanSession
     @Binding var bestSnapshot: DocumentSnapshot?
+    var preferredTargetWord: RecognizedWord? = nil
     let onReview: () -> Void
+
+    @Environment(\.scenePhase) private var scenePhase
 
     @StateObject private var cameraController = CameraSessionController()
     @State private var hasCameraAccess = false
     @State private var frameProcessor: ScanFrameProcessor?
     @State private var liveScanMessage: String?
     @State private var latestSnapshot: DocumentSnapshot?
+    @State private var hasReceivedScanUpdate = false
     @State private var cameraControlState = CameraControlState()
     @State private var automationController = ScanAutomationController()
     @State private var latestFrameQuality: FrameQualityMetrics?
     @State private var messageCoordinator = ScanMessageCoordinator()
     @State private var automationFocusRequest: CameraFocusRequest?
+    @State private var imageFusionSession: DocumentImageFusionSession?
 
     var body: some View {
-        VStack(spacing: 18) {
-            ZStack {
-                if hasCameraAccess {
-                    CameraPreviewView(
-                        session: cameraController.captureSession,
-                        onTapDevicePoint: focusCamera,
-                        automationFocusRequest: automationFocusRequest
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                } else {
-                    CameraPreviewPlaceholder()
+        ScrollView {
+            VStack(spacing: 18) {
+                ZStack {
+                    if hasCameraAccess {
+                        CameraPreviewView(
+                            session: cameraController.captureSession,
+                            onTapDevicePoint: focusCamera,
+                            automationFocusRequest: automationFocusRequest
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                    } else {
+                        CameraPreviewPlaceholder()
+                    }
                 }
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 460)
-            .padding(.horizontal, 16)
-            .accessibilityLabel("Live camera preview")
+                .frame(maxWidth: .infinity)
+                .frame(height: 460)
+                .padding(.horizontal, 16)
+                .accessibilityLabel("Live camera preview")
 
-            NormalizedDocumentPreviewView(
-                snapshot: bestSnapshot ?? latestSnapshot,
-                confidenceMap: session.confidenceMap,
-                showsOverlay: true,
-                targetCoordinate: scanGuidance.targetTile?.coordinate
-            )
-            .frame(height: 220)
-            .padding(.horizontal, 16)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Word confidence capture")
+                        .font(.headline)
+                    Text("Tough Scan confirms clear words first, then guides you back to anything marked Review, Rescan, or Needed.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
 
-            ScanGuidancePanel(guidance: scanGuidance)
+                    NormalizedDocumentPreviewView(
+                        snapshot: reviewSnapshot,
+                        confidenceMap: session.confidenceMap,
+                        showsOverlay: true,
+                        targetCoordinate: effectiveTargetCoordinate,
+                        recognizedWords: session.recognizedWords,
+                        targetWord: effectiveTargetWord,
+                        showsTextLineOverlay: false,
+                        showsWordOverlay: true
+                    )
+                    .frame(height: 220)
+                }
                 .padding(.horizontal, 16)
 
-            CameraAssistPanel(
-                state: cameraControlState,
-                controlsAvailable: cameraController.cameraControlsAvailable,
-                onTorchChanged: updateTorch,
-                onExposureChanged: updateExposure,
-                onReset: resetCameraControls
-            )
-            .padding(.horizontal, 16)
-
-            if let liveScanMessage {
-                Text(liveScanMessage)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                ScanGuidancePanel(
+                    guidance: scanGuidance,
+                    preferredTargetWord: preferredTargetWord
+                )
                     .padding(.horizontal, 16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
 
-            HStack(spacing: 12) {
+                CameraAssistPanel(
+                    state: cameraControlState,
+                    controlsAvailable: cameraController.cameraControlsAvailable,
+                    onTorchChanged: updateTorch,
+                    onExposureChanged: updateExposure,
+                    onReset: resetCameraControls
+                )
+                .padding(.horizontal, 16)
+
                 #if DEBUG
-                Button("Debug stronger pass") {
-                    addSimulatedFrame()
+                HStack {
+                    Button("Debug stronger pass") {
+                        addSimulatedFrame()
+                    }
+                    .buttonStyle(.bordered)
+                    Spacer()
                 }
-                .buttonStyle(.bordered)
+                .padding(.horizontal, 16)
                 #endif
-
-                Button("Review scan", action: onReview)
-                    .buttonStyle(.borderedProminent)
-                    .disabled(!canReviewScan)
             }
-            .controlSize(.large)
-            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
         }
-        .padding(.vertical, 16)
         .navigationTitle("Live scan")
         .navigationBarTitleDisplayMode(.inline)
+        .safeAreaInset(edge: .bottom) {
+            LiveScanActionBar(
+                canReviewScan: canReviewScan,
+                progressText: progressText,
+                reviewButtonTitle: reviewButtonTitle,
+                liveScanMessage: liveScanMessage,
+                onReview: openReview
+            )
+        }
         .task {
             await prepareCamera()
         }
         .onDisappear {
             cameraController.stop()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            switch newPhase {
+            case .active:
+                cameraController.start()
+            case .background:
+                cameraController.stop()
+            case .inactive:
+                break
+            @unknown default:
+                break
+            }
         }
         .onReceive(cameraController.$supportedExposureRange) { range in
             cameraControlState = CameraControlState(
@@ -122,8 +153,58 @@ struct LiveScanView: View {
         session.scanGuidance()
     }
 
+    private var effectiveTargetWord: RecognizedWord? {
+        preferredTargetWord ?? scanGuidance.targetWord
+    }
+
+    private var effectiveTargetCoordinate: TileCoordinate? {
+        effectiveTargetWord?.tileCoordinates.first ?? scanGuidance.targetTile?.coordinate
+    }
+
+    private var reviewSnapshot: DocumentSnapshot? {
+        bestSnapshot ?? latestSnapshot
+    }
+
     private var canReviewScan: Bool {
-        bestSnapshot != nil && scanGuidance.readyForReview
+        reviewSnapshot != nil && scanGuidance.readyForReview
+    }
+
+    private var regionsWithDataCount: Int {
+        session.confidenceMap.tiles.filter { tile in
+            tile.visualQuality > 0 || tile.ocrConfidence > 0 || tile.textCoverage > 0
+        }.count
+    }
+
+    private var wordSummary: WordEvidenceSummary {
+        session.wordEvidenceSummary
+    }
+
+    private var progressText: String {
+        if wordSummary.totalCount > 0 {
+            if scanGuidance.readyForReview {
+                return "Enough evidence collected: \(wordSummary.successfulCount) of \(wordSummary.totalCount) words confirmed."
+            }
+
+            return "Reading words: \(wordSummary.successfulCount) of \(wordSummary.totalCount) confirmed, \(wordSummary.rescanCount + wordSummary.neededCount) need another pass."
+        }
+
+        if scanGuidance.readyForReview {
+            return "Ready: all grid cells are reviewable."
+        }
+
+        if hasReceivedScanUpdate {
+            return "Scanning: \(regionsWithDataCount) of \(session.confidenceMap.tiles.count) grid cells have evidence."
+        }
+
+        return "Waiting for the first flattened page."
+    }
+
+    private var reviewButtonTitle: String {
+        guard wordSummary.totalCount > 0, !canReviewScan else {
+            return "Review scan"
+        }
+
+        return "Review scan · \(wordSummary.successfulCount)/\(wordSummary.totalCount) confirmed"
     }
 
     private func prepareCamera() async {
@@ -134,10 +215,15 @@ struct LiveScanView: View {
         }
 
         if frameProcessor == nil {
+            imageFusionSession = DocumentImageFusionSession(
+                gridWidth: session.confidenceMap.width,
+                gridHeight: session.confidenceMap.height
+            )
             frameProcessor = ScanFrameProcessor(
                 gridWidth: session.confidenceMap.width,
                 gridHeight: session.confidenceMap.height,
                 onObservation: { observation in
+                    hasReceivedScanUpdate = true
                     session.addFrame(observation)
                     publishScanMessage(message(for: session.scanGuidance()), priority: .guidance)
                     if let latestFrameQuality {
@@ -145,10 +231,9 @@ struct LiveScanView: View {
                     }
                 },
                 onSnapshot: { snapshot in
-                    latestSnapshot = snapshot
-                    if snapshot.isBetterThan(bestSnapshot) {
-                        bestSnapshot = snapshot
-                    }
+                    let recoveredSnapshot = addSnapshotToRecoveredPage(snapshot)
+                    latestSnapshot = recoveredSnapshot
+                    bestSnapshot = recoveredSnapshot
                 },
                 onFrameQuality: { metrics in
                     latestFrameQuality = metrics
@@ -161,8 +246,26 @@ struct LiveScanView: View {
 
         cameraController.frameConsumer = frameProcessor
         publishScanMessage("Hold the full document in frame so all edges are visible.", priority: .guidance)
-        cameraController.configure()
-        cameraController.start()
+        cameraController.configureAndStart()
+    }
+
+    private func openReview() {
+        if bestSnapshot == nil {
+            bestSnapshot = latestSnapshot
+        }
+
+        onReview()
+    }
+
+    private func addSnapshotToRecoveredPage(_ snapshot: DocumentSnapshot) -> DocumentSnapshot {
+        if imageFusionSession == nil {
+            imageFusionSession = DocumentImageFusionSession(
+                gridWidth: session.confidenceMap.width,
+                gridHeight: session.confidenceMap.height
+            )
+        }
+
+        return imageFusionSession?.add(snapshot) ?? snapshot
     }
 
     private func message(for guidance: ScanGuidance) -> String {
@@ -290,6 +393,7 @@ struct LiveScanView: View {
 
     #if DEBUG
     private func addSimulatedFrame() {
+        hasReceivedScanUpdate = true
         let weakTiles = session.confidenceMap.weakestTiles(limit: 4)
         let targetCoordinates = weakTiles.isEmpty
             ? [TileCoordinate(column: 0, row: 0)]
@@ -312,6 +416,17 @@ struct LiveScanView: View {
                         confidence: 0.78,
                         languageCode: "he,en",
                         tileCoordinates: targetCoordinates
+                    )
+                ],
+                recognizedWords: [
+                    RecognizedWord(
+                        text: "Sample",
+                        confidence: 0.78,
+                        languageCode: "en",
+                        tileCoordinates: targetCoordinates,
+                        boundingBox: NormalizedRect(x: 0.18, y: 0.74, width: 0.18, height: 0.04),
+                        lineText: "שלום / Sample",
+                        lineBoundingBox: NormalizedRect(x: 0.12, y: 0.72, width: 0.40, height: 0.07)
                     )
                 ]
             )
@@ -340,6 +455,33 @@ struct LiveScanView: View {
     #endif
 }
 
+private struct LiveScanActionBar: View {
+    let canReviewScan: Bool
+    let progressText: String
+    let reviewButtonTitle: String
+    let liveScanMessage: String?
+    let onReview: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(liveScanMessage ?? progressText)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Button(reviewButtonTitle, action: onReview)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .frame(maxWidth: .infinity)
+                .disabled(!canReviewScan)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 12)
+        .padding(.bottom, 10)
+        .background(.regularMaterial)
+    }
+}
+
 private struct CameraPreviewPlaceholder: View {
     var body: some View {
         RoundedRectangle(cornerRadius: 22, style: .continuous)
@@ -361,12 +503,13 @@ private struct CameraPreviewPlaceholder: View {
 
 private struct ScanGuidancePanel: View {
     let guidance: ScanGuidance
+    var preferredTargetWord: RecognizedWord?
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
-            Image(systemName: "scope")
+            Image(systemName: guidance.readyForReview ? "checkmark.circle.fill" : "scope")
                 .font(.title3)
-                .foregroundStyle(.blue)
+                .foregroundStyle(guidance.readyForReview ? .green : .blue)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
@@ -379,8 +522,9 @@ private struct ScanGuidancePanel: View {
             Spacer()
         }
         .padding(16)
-        .background(Color(uiColor: .secondarySystemBackground))
+        .background(guidance.readyForReview ? Color.green.opacity(0.12) : Color(uiColor: .secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .accessibilityHint(guidance.readyForReview ? "Use the Review scan button at the bottom of the screen." : "")
     }
 
     private var title: String {
@@ -399,13 +543,21 @@ private struct ScanGuidancePanel: View {
     private var message: String {
         switch guidance.action {
         case .scanMissingRegion:
+            if let word = preferredTargetWord {
+                return "Return to \(wordDescription(word)) and hold steady while Tough Scan gathers a cleaner pass."
+            }
+
             return "Aim at \(targetDescription). Hold the full page steady until the region fills in."
         case .rescanWeakText:
+            if let word = preferredTargetWord ?? guidance.targetWord {
+                return "Move closer to \(wordDescription(word)) and hold steady for another pass."
+            }
+
             return "Move back to \(targetDescription) and hold steady for another pass."
         case .holdSteady:
             return "The page is detected. Keep it still while the overlay settles."
         case .readyForReview:
-            return "Enough evidence has been collected. Review or add another page."
+            return "Enough evidence has been collected. Use the Review scan button at the bottom of the screen."
         }
     }
 
@@ -415,6 +567,15 @@ private struct ScanGuidancePanel: View {
         }
 
         return "column \(tile.coordinate.column + 1), row \(tile.coordinate.row + 1)"
+    }
+
+    private func wordDescription(_ word: RecognizedWord) -> String {
+        let trimmed = word.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return "the highlighted word"
+        }
+
+        return "\"\(trimmed)\""
     }
 }
 

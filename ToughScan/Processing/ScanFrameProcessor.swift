@@ -139,12 +139,14 @@ final class ScanFrameProcessor: CameraFrameConsumer {
                             tileEvidence: mapped.tileEvidence
                         ),
                         averageOCRConfidence: self.averageOCRConfidence(in: regions),
-                        textCoverage: self.averageTextCoverage(in: mapped.tileEvidence)
+                        textCoverage: self.averageTextCoverage(in: mapped.tileEvidence),
+                        tileEvidence: mapped.tileEvidence
                     )
                     let observation = FrameObservation(
                         id: UUID().uuidString,
                         tileEvidence: mapped.tileEvidence,
-                        recognizedTextBlocks: mapped.recognizedTextBlocks
+                        recognizedTextBlocks: mapped.recognizedTextBlocks,
+                        recognizedWords: mapped.recognizedWords
                     )
 
                     await self.onSnapshot?(snapshot)

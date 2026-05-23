@@ -58,9 +58,18 @@ enum ReviewTextSourceBuilder {
     }
 
     private static func textBody(for page: ScannedPage) -> TextBody? {
+        let wordText = wordEvidenceText(for: page)
+        if let wordText, shouldPreferWordEvidence(for: page) {
+            return TextBody(text: wordText, usesStructuredText: false, usesOCRText: true)
+        }
+
         if let structuredText = page.structuredDocument?.exportText,
            !structuredText.isEmpty {
             return TextBody(text: structuredText, usesStructuredText: true, usesOCRText: false)
+        }
+
+        if let wordText {
+            return TextBody(text: wordText, usesStructuredText: false, usesOCRText: true)
         }
 
         let ocrText = page.recognizedTextBlocks
@@ -73,6 +82,36 @@ enum ReviewTextSourceBuilder {
         }
 
         return TextBody(text: ocrText, usesStructuredText: false, usesOCRText: true)
+    }
+
+    private static func shouldPreferWordEvidence(for page: ScannedPage) -> Bool {
+        !page.confirmedWords.isEmpty || page.recognizedWords.contains { $0.state != .successful }
+    }
+
+    private static func wordEvidenceText(for page: ScannedPage) -> String? {
+        guard !page.recognizedWords.isEmpty else {
+            return nil
+        }
+
+        let resolvedWords = page.recognizedWords.map { word in
+            if let confirmed = page.confirmedWords.first(where: {
+                WordConfirmationRequestBuilder.requestID(for: $0.word) == WordConfirmationRequestBuilder.requestID(for: word)
+            }) {
+                return confirmed.resolvedText
+            }
+
+            if word.state <= .veryUncertain {
+                return "[? \(word.text) ?]"
+            }
+
+            return word.text
+        }
+
+        let text = resolvedWords
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            .joined(separator: " ")
+
+        return text.isEmpty ? nil : text
     }
 }
 
