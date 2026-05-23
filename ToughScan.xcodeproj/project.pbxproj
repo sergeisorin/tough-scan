@@ -44,6 +44,9 @@
 		53C257D4FAF362FB96C56AE1 /* RecomposedDocumentRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2335DF7B531AC208644D996 /* RecomposedDocumentRendererTests.swift */; };
 		544ABAEC05BDA8B297BC0FAC /* LiveTextImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 937222EB4807DBACD8677901 /* LiveTextImageView.swift */; };
 		54A73D8EC1EAC302B2C99652 /* ReviewPageSetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44D83CA69698900A7EABE868 /* ReviewPageSetTests.swift */; };
+		55B8E5F9E79D4D7DA0A7D061 /* StartScreenLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55B8E5F8E79D4D7DA0A7D061 /* StartScreenLayoutTests.swift */; };
+		55B8E5FAE79D4D7DA0A7D061 /* StartScreenLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55B8E5F7E79D4D7DA0A7D061 /* StartScreenLayout.swift */; };
+		55B8E5FBE79D4D7DA0A7D061 /* StartScreenLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55B8E5F7E79D4D7DA0A7D061 /* StartScreenLayout.swift */; };
 		56495695C04F3B64FA2D8A74 /* VisualDocumentRegionDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D69336150DDB7046705352B5 /* VisualDocumentRegionDetectorTests.swift */; };
 		56F5F81B2F865F46A9D11A9A /* ReviewTextSourceBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A86CE1F9D7DCF3F30816D21B /* ReviewTextSourceBuilder.swift */; };
 		5902BB6263118DAEE65F6575 /* ScanExportModeAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = E18A2234B6EF51EECA9A5F07 /* ScanExportModeAvailability.swift */; };
@@ -220,6 +223,8 @@
 		D5E9D0A88CD588369CF43498 /* CaptureScoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureScoring.swift; sourceTree = "<group>"; };
 		D69336150DDB7046705352B5 /* VisualDocumentRegionDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualDocumentRegionDetectorTests.swift; sourceTree = "<group>"; };
 		D7C022272C52FB7BDE36AEFD /* VisualDocumentRegionCandidateFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualDocumentRegionCandidateFilter.swift; sourceTree = "<group>"; };
+		55B8E5F7E79D4D7DA0A7D061 /* StartScreenLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartScreenLayout.swift; sourceTree = "<group>"; };
+		55B8E5F8E79D4D7DA0A7D061 /* StartScreenLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartScreenLayoutTests.swift; sourceTree = "<group>"; };
 		D94080E43D51B0721B4511FF /* VisualInkComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualInkComponent.swift; sourceTree = "<group>"; };
 		DD2BB3E170AE881062874D0D /* DocumentDetectionGeometryMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentDetectionGeometryMapper.swift; sourceTree = "<group>"; };
 		DEA34A48C82867A0735120BB /* ScanExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanExportService.swift; sourceTree = "<group>"; };
@@ -261,6 +266,7 @@
 			children = (
 				44D83CA69698900A7EABE868 /* ReviewPageSetTests.swift */,
 				7A8C9C1ABFD8D16C4A981780 /* ScanReviewStateTests.swift */,
+				55B8E5F8E79D4D7DA0A7D061 /* StartScreenLayoutTests.swift */,
 				CF6F4231BFA43926B04B5DBA /* WordConfirmationRequestBuilderTests.swift */,
 			);
 			path = Review;
@@ -472,6 +478,7 @@
 				44457DE5F26B9959B2DF125B /* Review */,
 				782E1716DBE759ADACE620BA /* Scan */,
 				5F8EF8DF2136340F25626481 /* Shared */,
+				55B8E5F7E79D4D7DA0A7D061 /* StartScreenLayout.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -608,6 +615,7 @@
 				FD8D89EEA9734C917220A601 /* ScanReviewView.swift in Sources */,
 				8EF7DA9581DDB66B9B71A56E /* ScannedPage.swift in Sources */,
 				9881609C2A09EC657C826B9A /* ShareSheetView.swift in Sources */,
+				55B8E5FAE79D4D7DA0A7D061 /* StartScreenLayout.swift in Sources */,
 				193404B4408A950C8FDAAF50 /* StructuredDocument.swift in Sources */,
 				4A76A1B0CA2FE93144BEE586 /* StructuredDocumentPanel.swift in Sources */,
 				B1FF73ADDD5466F0C4098F97 /* StructuredDocumentRecognitionCoordinator.swift in Sources */,
@@ -680,6 +688,8 @@
 				28562DD79D9EAB33278177FF /* ScanReviewState.swift in Sources */,
 				DC16E83CE99762C0134B7A8B /* ScanReviewStateTests.swift in Sources */,
 				28365114806EB29739E45EFB /* ScannedPage.swift in Sources */,
+				55B8E5FBE79D4D7DA0A7D061 /* StartScreenLayout.swift in Sources */,
+				55B8E5F9E79D4D7DA0A7D061 /* StartScreenLayoutTests.swift in Sources */,
 				4146404F706602A59318BD2B /* StructuredDocument.swift in Sources */,
 				971837B0B26FA8C128BD85E9 /* StructuredDocumentRecognitionCoordinator.swift in Sources */,
 				CEDDCADF74EB64814C2D4188 /* StructuredDocumentRecognitionCoordinatorTests.swift in Sources */,
