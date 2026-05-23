@@ -31,13 +31,6 @@ public struct RecognizedWord: Equatable, Sendable {
         self.lineBoundingBox = lineBoundingBox
     }
 
-    var mergeKey: RecognizedWordMergeKey {
-        RecognizedWordMergeKey(
-            text: text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
-            languageCode: languageCode,
-            tileCoordinates: tileCoordinates
-        )
-    }
 }
 
 public struct WordEvidenceSummary: Equatable, Sendable {
@@ -68,8 +61,3 @@ public struct WordEvidenceSummary: Equatable, Sendable {
     }
 }
 
-struct RecognizedWordMergeKey: Equatable, Hashable {
-    let text: String
-    let languageCode: String
-    let tileCoordinates: [TileCoordinate]
-}

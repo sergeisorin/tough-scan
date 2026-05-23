@@ -71,3 +71,19 @@ enum WordConfirmationRequestBuilder {
         ].joined(separator: "|")
     }
 }
+
+enum ConfirmedWordResolver {
+    static func makeConfirmedWords(
+        from words: [RecognizedWord],
+        confirmedTextByID: [String: String]
+    ) -> [ConfirmedRecognizedWord] {
+        words.compactMap { word in
+            let id = WordConfirmationRequestBuilder.requestID(for: word)
+            guard let resolvedText = confirmedTextByID[id] else {
+                return nil
+            }
+
+            return ConfirmedRecognizedWord(word: word, resolvedText: resolvedText)
+        }
+    }
+}

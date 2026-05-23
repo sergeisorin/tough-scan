@@ -17,6 +17,23 @@ final class WordConfirmationRequestBuilderTests: XCTestCase {
         XCTAssertTrue(requests.first?.note.contains("34%") == true)
     }
 
+    func testConfirmedWordResolverKeepsEditForSuccessfulCurrentWordAtSameLocation() {
+        let weakWord = makeWord("5▯4", confidence: 0.34)
+        let successfulWord = makeWord("S14", confidence: 0.86)
+        let confirmedTextByID = [
+            WordConfirmationRequestBuilder.requestID(for: weakWord): "514"
+        ]
+
+        let confirmedWords = ConfirmedWordResolver.makeConfirmedWords(
+            from: [successfulWord],
+            confirmedTextByID: confirmedTextByID
+        )
+
+        XCTAssertEqual(confirmedWords.count, 1)
+        XCTAssertEqual(confirmedWords.first?.word.text, "S14")
+        XCTAssertEqual(confirmedWords.first?.resolvedText, "514")
+    }
+
     private func makeWord(_ text: String, confidence: Double) -> RecognizedWord {
         RecognizedWord(
             text: text,

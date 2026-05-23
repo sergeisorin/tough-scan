@@ -173,7 +173,7 @@ public struct ProgressiveScanSession: Equatable, Sendable {
 
     private mutating func mergeRecognizedWord(_ word: RecognizedWord) {
         guard let existingIndex = recognizedWords.firstIndex(where: { existing in
-            existing.mergeKey == word.mergeKey || isSameWordSlot(existing, word)
+            isSameWordSlot(existing, word)
         }) else {
             recognizedWords.append(word)
             return

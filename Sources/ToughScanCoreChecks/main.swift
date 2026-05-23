@@ -17,6 +17,7 @@ struct ToughScanCoreChecks {
         testRecognizedTextBlockCanOmitBoundingBox()
         testRecognizedWordUsesConfidenceStateLabels()
         testRepeatedRecognizedWordKeepsHighestConfidenceObservation()
+        testRepeatedSameTextWordsInDifferentPositionsArePreserved()
         testCorrectedRecognizedWordReplacesWeakObservationInSameLocation()
         testCorrectedRecognizedWordCanReplaceSameLocationWithSimilarConfidence()
         testWordEvidenceSummaryCountsStates()
@@ -345,6 +346,38 @@ private func testRepeatedRecognizedWordKeepsHighestConfidenceObservation() {
     expect(session.recognizedWords.count == 1)
     expect(session.recognizedWords.first?.confidence == 0.88)
     expect(session.recognizedWords.first?.boundingBox == strongWord.boundingBox)
+}
+
+private func testRepeatedSameTextWordsInDifferentPositionsArePreserved() {
+    var session = ProgressiveScanSession(gridWidth: 1, gridHeight: 1)
+    let coordinate = TileCoordinate(column: 0, row: 0)
+
+    session.addFrame(
+        FrameObservation(
+            id: "frame-1",
+            tileEvidence: [],
+            recognizedTextBlocks: [],
+            recognizedWords: [
+                RecognizedWord(
+                    text: "the",
+                    confidence: 0.82,
+                    languageCode: "en",
+                    tileCoordinates: [coordinate],
+                    boundingBox: NormalizedRect(x: 0.10, y: 0.70, width: 0.08, height: 0.05)
+                ),
+                RecognizedWord(
+                    text: "the",
+                    confidence: 0.80,
+                    languageCode: "en",
+                    tileCoordinates: [coordinate],
+                    boundingBox: NormalizedRect(x: 0.50, y: 0.70, width: 0.08, height: 0.05)
+                )
+            ]
+        )
+    )
+
+    expect(session.recognizedWords.count == 2)
+    expect(session.recognizedWords.map(\.text) == ["the", "the"])
 }
 
 private func testCorrectedRecognizedWordReplacesWeakObservationInSameLocation() {

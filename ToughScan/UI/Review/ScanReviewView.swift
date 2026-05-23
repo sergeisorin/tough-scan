@@ -125,6 +125,7 @@ struct ScanReviewView: View {
                 if !confirmationRequests.isEmpty {
                     ConfirmationRequestsPanel(
                         requests: confirmationRequests,
+                        confirmedWords: confirmedWords,
                         confirmedWordText: $confirmedWordText,
                         confirmationDrafts: $confirmationDrafts,
                         onRescan: onRescan
@@ -301,13 +302,10 @@ struct ScanReviewView: View {
     }
 
     private var confirmedWords: [ConfirmedRecognizedWord] {
-        confirmationRequests.compactMap { request in
-            guard let resolvedText = confirmedWordText[request.id] else {
-                return nil
-            }
-
-            return ConfirmedRecognizedWord(word: request.word, resolvedText: resolvedText)
-        }
+        ConfirmedWordResolver.makeConfirmedWords(
+            from: session.recognizedWords,
+            confirmedTextByID: confirmedWordText
+        )
     }
 
     private var showsImageOnlyExportMessage: Bool {
@@ -416,6 +414,7 @@ struct ScanReviewView: View {
 
 private struct ConfirmationRequestsPanel: View {
     let requests: [WordConfirmationRequest]
+    let confirmedWords: [ConfirmedRecognizedWord]
     @Binding var confirmedWordText: [String: String]
     @Binding var confirmationDrafts: [String: String]
     let onRescan: (RecognizedWord?, [ConfirmedRecognizedWord]) -> Void
@@ -464,15 +463,6 @@ private struct ConfirmationRequestsPanel: View {
         }
     }
 
-    private var confirmedWords: [ConfirmedRecognizedWord] {
-        requests.compactMap { request in
-            guard let resolvedText = confirmedWordText[request.id] else {
-                return nil
-            }
-
-            return ConfirmedRecognizedWord(word: request.word, resolvedText: resolvedText)
-        }
-    }
 }
 
 private struct ConfirmationRequestCard: View {
