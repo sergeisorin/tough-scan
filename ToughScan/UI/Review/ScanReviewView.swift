@@ -69,17 +69,41 @@ struct ScanReviewView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Review recovered document")
                         .font(.title2.weight(.semibold))
-                    Text("Use the overlay to decide whether to export or scan weak areas again.")
+                    Text("Check the scanned page first, then use the confidence grid to decide whether weak areas need another pass.")
                         .foregroundStyle(.secondary)
                 }
 
-                NormalizedDocumentPreviewView(
-                    snapshot: snapshot,
-                    confidenceMap: session.confidenceMap,
-                    showsOverlay: true,
-                    recognizedTextBlocks: session.recognizedTextBlocks
-                )
-                .frame(height: 420)
+                if let snapshot {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Scanned page")
+                            .font(.headline)
+                        Text("This is the recovered page image that will be used for the default PDF export.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Image(uiImage: snapshot.previewImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: .infinity)
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            .accessibilityLabel("Scanned page preview")
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Region confidence (4x6 grid)")
+                        .font(.headline)
+                    Text("Green is good enough. Orange is optional. Red or gray should be scanned again if possible.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+
+                    NormalizedDocumentPreviewView(
+                        snapshot: snapshot,
+                        confidenceMap: session.confidenceMap,
+                        showsOverlay: true,
+                        showsTextLineOverlay: false
+                    )
+                    .frame(height: 320)
+                }
 
                 ConfidenceLegend()
 

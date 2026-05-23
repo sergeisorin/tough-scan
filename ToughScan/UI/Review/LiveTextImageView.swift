@@ -23,6 +23,10 @@ struct LiveTextImageView: UIViewRepresentable {
         context.coordinator.analyze(image: image)
     }
 
+    static func dismantleUIView(_ uiView: UIImageView, coordinator: Coordinator) {
+        coordinator.cancelAnalysis()
+    }
+
     @MainActor
     final class Coordinator {
         let interaction = ImageAnalysisInteraction()
@@ -58,6 +62,13 @@ struct LiveTextImageView: UIViewRepresentable {
                     }
                 }
             }
+        }
+
+        func cancelAnalysis() {
+            analysisTask?.cancel()
+            analysisTask = nil
+            interaction.analysis = nil
+            interaction.preferredInteractionTypes = []
         }
 
         deinit {

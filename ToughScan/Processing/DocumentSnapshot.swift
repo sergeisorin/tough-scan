@@ -1,3 +1,4 @@
+import ToughScanCore
 import UIKit
 
 struct DocumentSnapshot: Identifiable {
@@ -8,6 +9,7 @@ struct DocumentSnapshot: Identifiable {
     let captureScore: Double
     let averageOCRConfidence: Double
     let textCoverage: Double
+    let tileEvidence: [TileEvidence]
     let createdAt: Date
 
     init(
@@ -17,6 +19,7 @@ struct DocumentSnapshot: Identifiable {
         captureScore: Double? = nil,
         averageOCRConfidence: Double = 0,
         textCoverage: Double = 0,
+        tileEvidence: [TileEvidence] = [],
         createdAt: Date = Date()
     ) {
         self.id = id
@@ -26,6 +29,7 @@ struct DocumentSnapshot: Identifiable {
         self.captureScore = min(max(captureScore ?? visualQuality, 0), 1)
         self.averageOCRConfidence = min(max(averageOCRConfidence, 0), 1)
         self.textCoverage = min(max(textCoverage, 0), 1)
+        self.tileEvidence = tileEvidence
         self.createdAt = createdAt
     }
 

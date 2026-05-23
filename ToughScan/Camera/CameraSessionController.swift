@@ -24,6 +24,7 @@ final class CameraSessionController: NSObject, ObservableObject {
 
     private let sessionQueue = DispatchQueue(label: "com.local.toughscan.camera-session")
     private let videoOutput = AVCaptureVideoDataOutput()
+    private var isSessionConfigured = false
 
     override init() {
         self.authorizationStatus = AVCaptureDevice.authorizationStatus(for: .video)
@@ -38,59 +39,27 @@ final class CameraSessionController: NSObject, ObservableObject {
         return granted
     }
 
-    func configure() {
+    func configureAndStart() {
         sessionQueue.async { [weak self] in
             guard let self else {
                 return
             }
 
-            self.captureSession.beginConfiguration()
-            self.captureSession.sessionPreset = .photo
-            defer {
-                self.captureSession.commitConfiguration()
-            }
-
-            self.captureSession.inputs.forEach(self.captureSession.removeInput)
-            self.captureSession.outputs.forEach(self.captureSession.removeOutput)
-
-            guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
-                  let input = try? AVCaptureDeviceInput(device: device),
-                  self.captureSession.canAddInput(input) else {
-                self.publishCameraControlSupport(isAvailable: false)
-                self.publishError("Back camera is not available.")
+            guard self.isSessionConfigured || self.performConfiguration() else {
                 return
             }
 
-            self.captureSession.addInput(input)
-            self.publishCameraControlSupport(
-                isAvailable: true,
-                exposureRange: device.minExposureTargetBias...device.maxExposureTargetBias,
-                zoomRange: self.supportedAutonomousZoomRange(for: device)
-            )
-
-            self.videoOutput.alwaysDiscardsLateVideoFrames = true
-            self.videoOutput.setSampleBufferDelegate(self, queue: self.sessionQueue)
-
-            guard self.captureSession.canAddOutput(self.videoOutput) else {
-                self.publishError("Camera frame output is not available.")
-                return
-            }
-
-            self.captureSession.addOutput(self.videoOutput)
-            self.videoOutput.connection(with: .video)?.videoRotationAngle = 90
+            self.startRunningIfNeeded()
         }
     }
 
     func start() {
         sessionQueue.async { [weak self] in
-            guard let self, !self.captureSession.isRunning else {
+            guard let self, self.isSessionConfigured else {
                 return
             }
 
-            self.captureSession.startRunning()
-            DispatchQueue.main.async {
-                self.isRunning = true
-            }
+            self.startRunningIfNeeded()
         }
     }
 
@@ -345,6 +314,63 @@ final class CameraSessionController: NSObject, ObservableObject {
         let upperBound = min(hardwareUpperBound, 2)
 
         return lowerBound...upperBound
+    }
+
+    private func performConfiguration() -> Bool {
+        captureSession.beginConfiguration()
+        captureSession.sessionPreset = .high
+        defer {
+            captureSession.commitConfiguration()
+        }
+
+        captureSession.inputs.forEach(captureSession.removeInput)
+        captureSession.outputs.forEach(captureSession.removeOutput)
+
+        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+              let input = try? AVCaptureDeviceInput(device: device),
+              captureSession.canAddInput(input) else {
+            publishCameraControlSupport(isAvailable: false)
+            publishError("Back camera is not available.")
+            isSessionConfigured = false
+            return false
+        }
+
+        captureSession.addInput(input)
+        publishCameraControlSupport(
+            isAvailable: true,
+            exposureRange: device.minExposureTargetBias...device.maxExposureTargetBias,
+            zoomRange: supportedAutonomousZoomRange(for: device)
+        )
+
+        videoOutput.alwaysDiscardsLateVideoFrames = true
+        videoOutput.setSampleBufferDelegate(self, queue: sessionQueue)
+
+        guard captureSession.canAddOutput(videoOutput) else {
+            publishError("Camera frame output is not available.")
+            isSessionConfigured = false
+            return false
+        }
+
+        captureSession.addOutput(videoOutput)
+
+        if let connection = videoOutput.connection(with: .video),
+           connection.isVideoRotationAngleSupported(90) {
+            connection.videoRotationAngle = 90
+        }
+
+        isSessionConfigured = true
+        return true
+    }
+
+    private func startRunningIfNeeded() {
+        guard !captureSession.isRunning else {
+            return
+        }
+
+        captureSession.startRunning()
+        DispatchQueue.main.async {
+            self.isRunning = true
+        }
     }
 
     private func publishCameraControlSupport(

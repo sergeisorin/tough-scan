@@ -20,6 +20,10 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Tough Scan uses the camera to progressively recover hard-to-read text documents. Processing stays on this iPhone.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Tough Scan can save exported scans only when you choose to export them.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
