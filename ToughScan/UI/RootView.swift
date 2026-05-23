@@ -6,19 +6,25 @@ struct RootView: View {
     @State private var session = ProgressiveScanSession(gridWidth: 4, gridHeight: 6)
     @State private var bestSnapshot: DocumentSnapshot?
     @State private var capturedPages: [ScannedPage] = []
+    @State private var preferredRescanWord: RecognizedWord?
+    @State private var pendingConfirmedWords: [ConfirmedRecognizedWord] = []
 
     var body: some View {
         NavigationStack {
             switch route {
             case .start:
                 StartScanView {
+                    preferredRescanWord = nil
+                    pendingConfirmedWords = []
                     route = .scan
                 }
             case .scan:
                 LiveScanView(
                     session: $session,
-                    bestSnapshot: $bestSnapshot
+                    bestSnapshot: $bestSnapshot,
+                    preferredTargetWord: preferredRescanWord
                 ) {
+                    preferredRescanWord = nil
                     route = .review
                 }
             case .review:
@@ -26,18 +32,25 @@ struct RootView: View {
                     session: session,
                     snapshot: bestSnapshot,
                     capturedPages: capturedPages,
+                    initialConfirmedWords: pendingConfirmedWords,
                     onAddPage: addCurrentPageAndContinue,
-                    onRemoveCapturedPage: removeCapturedPage
-                ) {
-                    route = .scan
-                }
+                    onRemoveCapturedPage: removeCapturedPage,
+                    onRescan: beginRescan
+                )
             }
         }
     }
 
+    private func beginRescan(targetWord: RecognizedWord?, confirmedWords: [ConfirmedRecognizedWord]) {
+        preferredRescanWord = targetWord
+        pendingConfirmedWords = confirmedWords
+        route = .scan
+    }
+
     private func addCurrentPageAndContinue(
         structuredDocument: StructuredDocument?,
-        visualRegions: [VisualDocumentRegion]
+        visualRegions: [VisualDocumentRegion],
+        confirmedWords: [ConfirmedRecognizedWord]
     ) {
         guard let bestSnapshot else {
             return
@@ -47,12 +60,16 @@ struct RootView: View {
             ScannedPage(
                 snapshot: bestSnapshot,
                 recognizedTextBlocks: session.recognizedTextBlocks,
+                recognizedWords: session.recognizedWords,
+                confirmedWords: confirmedWords,
                 structuredDocument: structuredDocument,
                 visualRegions: visualRegions
             )
         )
         session = ProgressiveScanSession(gridWidth: 4, gridHeight: 6)
         self.bestSnapshot = nil
+        preferredRescanWord = nil
+        pendingConfirmedWords = []
         route = .scan
     }
 
@@ -71,51 +88,172 @@ private struct StartScanView: View {
     let onStart: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 28) {
-            Spacer()
+        VStack(alignment: .leading, spacing: 24) {
+            AppWordmark()
+                .padding(.top, 12)
+
+            Spacer(minLength: 12)
+
+            StartDocumentHero()
+                .frame(maxWidth: .infinity)
 
             VStack(alignment: .leading, spacing: 12) {
                 Text("Recover difficult text")
-                    .font(.system(.largeTitle, design: .serif, weight: .semibold))
+                    .font(.system(size: 32, weight: .bold, design: .default))
+                    .tracking(-0.7)
                     .foregroundStyle(.primary)
 
                 Text("Progressively scan faded Hebrew and English documents. Processing stays on this iPhone.")
-                    .font(.body)
+                    .font(.subheadline)
                     .lineSpacing(3)
                     .foregroundStyle(.secondary)
             }
 
-            VStack(alignment: .leading, spacing: 12) {
-                LocalPromiseRow(text: "No server or cloud OCR")
-                LocalPromiseRow(text: "Confidence shown by region and text")
-                LocalPromiseRow(text: "Guided rescans for weak areas")
+            VStack(spacing: 1) {
+                LocalPromiseRow(
+                    symbolName: "lock",
+                    title: "No server or cloud OCR",
+                    subtitle: "Capture, OCR and reconstruction happen on this device."
+                )
+                LocalPromiseRow(
+                    symbolName: "square.grid.2x2",
+                    title: "Confidence shown by region and text",
+                    subtitle: "You see exactly which words the model is unsure about."
+                )
+                LocalPromiseRow(
+                    symbolName: "arrow.clockwise",
+                    title: "Guided rescans for weak areas",
+                    subtitle: "The app tells you where to look again, never just retakes blindly."
+                )
             }
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 
+            Spacer(minLength: 18)
+            
             Button(action: onStart) {
-                Text("Start local scan")
+                Label("Start local scan", systemImage: "viewfinder")
+                    .font(.headline)
                     .frame(maxWidth: .infinity)
+                    .frame(height: 52)
             }
             .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+
+            HStack(spacing: 6) {
+                Image(systemName: "shield")
+                Text("Nothing leaves this device. No account required.")
+            }
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity)
+        }
+        .padding(.horizontal, 22)
+        .padding(.vertical, 24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(red: 0.95, green: 0.95, blue: 0.96))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+private struct AppWordmark: View {
+    var body: some View {
+        HStack(spacing: 8) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(Color(red: 0.16, green: 0.29, blue: 0.56))
+                Image(systemName: "viewfinder")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+            .frame(width: 26, height: 26)
+
+            Text("TOUGH SCAN")
+                .font(.caption.weight(.bold))
+                .tracking(2.2)
+                .foregroundStyle(.secondary)
 
             Spacer()
+
+            Text("v1.0 · local")
+                .font(.caption2.monospaced())
+                .foregroundStyle(.tertiary)
+                .textCase(.uppercase)
         }
-        .padding(24)
-        .navigationTitle("Tough Scan")
+    }
+}
+
+private struct StartDocumentHero: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            Color(red: 0.16, green: 0.29, blue: 0.56).opacity(0.13),
+                            .clear
+                        ],
+                        center: .center,
+                        startRadius: 6,
+                        endRadius: 110
+                    )
+                )
+                .frame(height: 170)
+
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(.white)
+                .frame(width: 184, height: 142)
+                .shadow(color: .black.opacity(0.10), radius: 22, y: 12)
+                .rotationEffect(.degrees(-4))
+                .overlay {
+                    StartDocumentHeroLines()
+                        .rotationEffect(.degrees(-4))
+                }
+        }
+    }
+}
+
+private struct StartDocumentHeroLines: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            Capsule().fill(.primary.opacity(0.55)).frame(width: 60, height: 5)
+            Capsule().fill(.primary.opacity(0.24)).frame(width: 130, height: 3)
+            Capsule().fill(.primary.opacity(0.18)).frame(width: 150, height: 3)
+            Capsule().fill(.green.opacity(0.25)).frame(width: 82, height: 12)
+            Capsule().fill(.primary.opacity(0.34)).frame(width: 150, height: 3)
+            Capsule().fill(.orange.opacity(0.25)).frame(width: 92, height: 12)
+            Capsule().fill(.red.opacity(0.22)).frame(width: 118, height: 12)
+        }
+        .padding(18)
+        .frame(width: 184, height: 142, alignment: .topLeading)
     }
 }
 
 private struct LocalPromiseRow: View {
-    let text: String
+    let symbolName: String
+    let title: String
+    let subtitle: String
 
     var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "checkmark.seal")
-                .foregroundStyle(.green)
-            Text(text)
-                .foregroundStyle(.primary)
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: symbolName)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color(red: 0.16, green: 0.29, blue: 0.56))
+                .frame(width: 32, height: 32)
+                .background(Color(red: 0.91, green: 0.93, blue: 0.97))
+                .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
         }
-        .font(.callout)
+        .padding(14)
+        .background(.white)
     }
 }
 

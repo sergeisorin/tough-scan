@@ -21,15 +21,18 @@ public struct FrameObservation: Equatable, Sendable {
     public let id: String
     public let tileEvidence: [TileEvidence]
     public let recognizedTextBlocks: [RecognizedTextBlock]
+    public let recognizedWords: [RecognizedWord]
 
     public init(
         id: String,
         tileEvidence: [TileEvidence],
-        recognizedTextBlocks: [RecognizedTextBlock]
+        recognizedTextBlocks: [RecognizedTextBlock],
+        recognizedWords: [RecognizedWord] = []
     ) {
         self.id = id
         self.tileEvidence = tileEvidence
         self.recognizedTextBlocks = recognizedTextBlocks
+        self.recognizedWords = recognizedWords
     }
 }
 

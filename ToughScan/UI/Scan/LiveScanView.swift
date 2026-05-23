@@ -5,6 +5,7 @@ import UIKit
 struct LiveScanView: View {
     @Binding var session: ProgressiveScanSession
     @Binding var bestSnapshot: DocumentSnapshot?
+    var preferredTargetWord: RecognizedWord? = nil
     let onReview: () -> Void
 
     @Environment(\.scenePhase) private var scenePhase
@@ -43,9 +44,9 @@ struct LiveScanView: View {
                 .accessibilityLabel("Live camera preview")
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Flattened page + confidence grid")
+                    Text("Word confidence capture")
                         .font(.headline)
-                    Text("Scan the full page, then revisit gray, red, or orange grid cells until the page is ready.")
+                    Text("Tough Scan confirms clear words first, then guides you back to anything marked Review, Rescan, or Needed.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
 
@@ -53,14 +54,20 @@ struct LiveScanView: View {
                         snapshot: reviewSnapshot,
                         confidenceMap: session.confidenceMap,
                         showsOverlay: true,
-                        targetCoordinate: scanGuidance.targetTile?.coordinate,
-                        showsTextLineOverlay: false
+                        targetCoordinate: effectiveTargetCoordinate,
+                        recognizedWords: session.recognizedWords,
+                        targetWord: effectiveTargetWord,
+                        showsTextLineOverlay: false,
+                        showsWordOverlay: true
                     )
                     .frame(height: 220)
                 }
                 .padding(.horizontal, 16)
 
-                ScanGuidancePanel(guidance: scanGuidance)
+                ScanGuidancePanel(
+                    guidance: scanGuidance,
+                    preferredTargetWord: preferredTargetWord
+                )
                     .padding(.horizontal, 16)
 
                 CameraAssistPanel(
@@ -91,6 +98,7 @@ struct LiveScanView: View {
             LiveScanActionBar(
                 canReviewScan: canReviewScan,
                 progressText: progressText,
+                reviewButtonTitle: reviewButtonTitle,
                 liveScanMessage: liveScanMessage,
                 onReview: openReview
             )
@@ -145,6 +153,14 @@ struct LiveScanView: View {
         session.scanGuidance()
     }
 
+    private var effectiveTargetWord: RecognizedWord? {
+        preferredTargetWord ?? scanGuidance.targetWord
+    }
+
+    private var effectiveTargetCoordinate: TileCoordinate? {
+        effectiveTargetWord?.tileCoordinates.first ?? scanGuidance.targetTile?.coordinate
+    }
+
     private var reviewSnapshot: DocumentSnapshot? {
         bestSnapshot ?? latestSnapshot
     }
@@ -159,7 +175,19 @@ struct LiveScanView: View {
         }.count
     }
 
+    private var wordSummary: WordEvidenceSummary {
+        session.wordEvidenceSummary
+    }
+
     private var progressText: String {
+        if wordSummary.totalCount > 0 {
+            if scanGuidance.readyForReview {
+                return "Enough evidence collected: \(wordSummary.successfulCount) of \(wordSummary.totalCount) words confirmed."
+            }
+
+            return "Reading words: \(wordSummary.successfulCount) of \(wordSummary.totalCount) confirmed, \(wordSummary.rescanCount + wordSummary.neededCount) need another pass."
+        }
+
         if scanGuidance.readyForReview {
             return "Ready: all grid cells are reviewable."
         }
@@ -169,6 +197,14 @@ struct LiveScanView: View {
         }
 
         return "Waiting for the first flattened page."
+    }
+
+    private var reviewButtonTitle: String {
+        guard wordSummary.totalCount > 0, !canReviewScan else {
+            return "Review scan"
+        }
+
+        return "Review scan · \(wordSummary.successfulCount)/\(wordSummary.totalCount) confirmed"
     }
 
     private func prepareCamera() async {
@@ -381,6 +417,17 @@ struct LiveScanView: View {
                         languageCode: "he,en",
                         tileCoordinates: targetCoordinates
                     )
+                ],
+                recognizedWords: [
+                    RecognizedWord(
+                        text: "Sample",
+                        confidence: 0.78,
+                        languageCode: "en",
+                        tileCoordinates: targetCoordinates,
+                        boundingBox: NormalizedRect(x: 0.18, y: 0.74, width: 0.18, height: 0.04),
+                        lineText: "שלום / Sample",
+                        lineBoundingBox: NormalizedRect(x: 0.12, y: 0.72, width: 0.40, height: 0.07)
+                    )
                 ]
             )
         )
@@ -411,6 +458,7 @@ struct LiveScanView: View {
 private struct LiveScanActionBar: View {
     let canReviewScan: Bool
     let progressText: String
+    let reviewButtonTitle: String
     let liveScanMessage: String?
     let onReview: () -> Void
 
@@ -421,7 +469,7 @@ private struct LiveScanActionBar: View {
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            Button("Review scan", action: onReview)
+            Button(reviewButtonTitle, action: onReview)
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .frame(maxWidth: .infinity)
@@ -455,6 +503,7 @@ private struct CameraPreviewPlaceholder: View {
 
 private struct ScanGuidancePanel: View {
     let guidance: ScanGuidance
+    var preferredTargetWord: RecognizedWord?
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
@@ -494,8 +543,16 @@ private struct ScanGuidancePanel: View {
     private var message: String {
         switch guidance.action {
         case .scanMissingRegion:
+            if let word = preferredTargetWord {
+                return "Return to \(wordDescription(word)) and hold steady while Tough Scan gathers a cleaner pass."
+            }
+
             return "Aim at \(targetDescription). Hold the full page steady until the region fills in."
         case .rescanWeakText:
+            if let word = preferredTargetWord ?? guidance.targetWord {
+                return "Move closer to \(wordDescription(word)) and hold steady for another pass."
+            }
+
             return "Move back to \(targetDescription) and hold steady for another pass."
         case .holdSteady:
             return "The page is detected. Keep it still while the overlay settles."
@@ -510,6 +567,15 @@ private struct ScanGuidancePanel: View {
         }
 
         return "column \(tile.coordinate.column + 1), row \(tile.coordinate.row + 1)"
+    }
+
+    private func wordDescription(_ word: RecognizedWord) -> String {
+        let trimmed = word.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return "the highlighted word"
+        }
+
+        return "\"\(trimmed)\""
     }
 }
 

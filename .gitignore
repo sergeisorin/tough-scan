@@ -7,6 +7,7 @@ DerivedData/
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
 .superpowers/
+.worktrees/
 .impeccable.md
 ARCHITECTURE.md
 REQUIREMENTS.md

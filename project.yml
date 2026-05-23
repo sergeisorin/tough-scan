@@ -72,6 +72,7 @@ targets:
       - ToughScan/Processing/VisualDocumentRegionDetector.swift
       - ToughScan/Processing/VisualInkComponent.swift
       - ToughScan/Processing/VisualInkComponentFinder.swift
+      - ToughScan/Processing/WordConfirmationRequest.swift
     dependencies:
       - package: ToughScanPackage
         product: ToughScanCore

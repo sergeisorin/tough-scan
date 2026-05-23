@@ -7,6 +7,7 @@ struct ScanReviewState {
     let structuredRecognitionCoordinator: StructuredDocumentRecognitionCoordinator
     let visualRegionDetectionCoordinator: VisualDocumentRegionDetectionCoordinator
     let selectedExportMode: ScanExportMode
+    var confirmedWords: [ConfirmedRecognizedWord] = []
 
     var currentPage: ScannedPage? {
         guard let snapshot else {
@@ -17,6 +18,8 @@ struct ScanReviewState {
             id: snapshot.id,
             snapshot: snapshot,
             recognizedTextBlocks: session.recognizedTextBlocks,
+            recognizedWords: session.recognizedWords,
+            confirmedWords: confirmedWords,
             structuredDocument: currentStructuredDocument,
             visualRegions: currentVisualRegions
         )
